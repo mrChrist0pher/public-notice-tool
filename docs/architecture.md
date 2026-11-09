@@ -21,7 +21,7 @@ A separate custom Experience Builder widget handles the web workflow in JavaScri
 ## What remains manual or pending
 
 - Vendor email and follow-up, PN package assembly, EnerGov upload and workflow close-out.
-- Decide whether official selection records belong in a central feature service; current web raw CSV has attributes but no geometry.
+- Decide whether official selection records belong in a central feature service; the current web download saves only the cleaned CSV, with no selection archive.
 - Confirm vendor format and remaining cleanup policy questions with the business team.
 - Owner / resident / business options are V2; current web selection is owners only.
 - Zoning overlay text under the PDF legend is deferred pending discussion. Zoning is a reference map layer, not an implemented PDF attribute calculation.

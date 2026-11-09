@@ -10,3 +10,5 @@
 - [What we modified in Experience Builder](../web/MODIFICATIONS.md)
 - [Web setup and local app wiring](../web/SETUP.md)
 - [Map styling and labels](../web/MAP-STYLING.md)
+
+- [Plain-English cleanup explanation for the team](cleanup-team-guide.md)

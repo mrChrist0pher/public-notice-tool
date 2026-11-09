@@ -47,7 +47,7 @@ flowchart LR
   Q --> VM[Generate location-map PDF with QR]
   VM --> B[Choose 300 / 600 / Adjacent / Custom]
   B --> S[Run and adjust recipient selection]
-  S --> ML[Generate cleaned mailing CSV and raw selection CSV]
+  S --> ML[Download cleaned mailing CSV]
   ML --> V[Planner sends package to mailing vendor]
   V --> E[Complete records upload and close out in EnerGov]
 ```
