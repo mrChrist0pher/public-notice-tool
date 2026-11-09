@@ -6,11 +6,11 @@ This guide separates custom source from stock Esri widgets and app/map configura
 
 | Component | Changes made for this project | Where to edit |
 |---|---|---|
-| Workflow widget | Steps 2–4, radius-first 300/600/Adjacent/Custom controls, Run button, manual add/remove, status, downloadable results | src/runtime/widget.tsx |
+| Workflow widget | Steps 2–4, radius-first 300/600/Adjacent/Custom controls, Run button, manual add/remove, status, downloadable cleaned CSV | src/runtime/widget.tsx |
 | Case handling | Observe stock Search selection, query every polygon for case, union geometries, display only Subject Area; cancel stale operations on new search | src/runtime/widget.tsx |
 | Recipient query | Geodesic distance from full case geometry; ID-first queries and 400-feature batches; checked record totals; selected IDs linked to table | src/runtime/widget.tsx |
 | Cleanup | Port Python rules: trim/null text, state codes, exact approved City exclusion, confirmed CU aliases, preserve legal entities/care-of/units, combine matching destinations including ZIP5/+4 variants, safe CSV | src/runtime/cleanup.ts |
-| Mailing export | Cleaned ML CSV plus raw selection CSV in a case-named ZIP; hide diagnostic flags/counts/files in interface/download | src/runtime/widget.tsx |
+| Mailing export | One case-named cleaned CSV; exclude records with both delivery lines blank; no ZIP or raw/audit/review download | src/runtime/widget.tsx |
 | Map capture | Separate cloned print MapView, north up, 20% maximum subject width, tall-subject guard, 300 dpi; minimum scale 2400 rounded upward in 1200 steps; suppress city/place basemap labels in private print view | src/runtime/widget.tsx |
 | PDF layout | Letter portrait, 8 x 8.5-inch frame, larger legend patches/text, logo bottom right, arrow/feet bar above sources, URL under QR at left, tool credit bottom right, remove personal contact attribution | src/runtime/pdf-layout.ts |
 | QR | Dynamic case URL, QR quiet zone/error correction, same printed and clickable PDF destination | src/runtime/pdf-layout.ts |
@@ -42,4 +42,11 @@ These changes apply only to this repository copy. No installed widget, local app
 
 ## Dependencies and ownership
 
-Esri supplies Experience Builder, React/Jimu framework, Maps SDK and stock widgets. We wrote the workflow/PDF/cleanup integration for P&DS GIS. JSZip, pdf-lib and qrcode are upstream libraries, not our code. Install them from their packages rather than committing vendor source or node_modules. Retain their licenses in any deployment bundle. No license is assigned to this project's custom code or City artwork by this upload.
+Esri supplies Experience Builder, React/Jimu framework, Maps SDK and stock widgets. We wrote the workflow/PDF/cleanup integration for P&DS GIS. pdf-lib and qrcode are upstream libraries, not our code. Install them from their packages rather than committing vendor source or node_modules. Retain their licenses in any deployment bundle. No license is assigned to this project's custom code or City artwork by this upload.
+
+## November 9 follow-up
+
+- Added individually commented blank-address exclusion in web and Pro cleanup. Check after whitespace and confirmed CU routing; retain PO boxes and populated second lines.
+- Web Generate now downloads only CASE_ML.csv. Removed JSZip from the custom widget and removed raw-file wording. Pro retains its separately documented archive/audit workflow.
+- Added synthetic checks for exclusions and the actual single-CSV download handler.
+- Hosted PDF logo URL now resolves relative to document.baseURI, not the server root.

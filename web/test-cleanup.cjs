@@ -15,4 +15,29 @@ const conflicts=cleanup([base,{...base,SOURCE_OID:2,MailZip:'80301-1234'},{...ba
 assert.equal(conflicts.rows[0].ZIP,'80301');assert(conflicts.review[0].REVIEW_FLAGS.includes('Conflicting'))
 assert(csv([{NAME:'=1+1',ZIP:'01234'}],['NAME','ZIP']).includes("'"+'=1+1'))
 assert(csv([{NAME:'A "quoted", owner',ZIP:'01234'}],['NAME','ZIP']).includes('"A ""quoted"", owner"'))
-console.log('PASS: ZIP variants/conflicts, legal entities, City exclusion, Housing retention, CU override/review, audit and safe CSV.')
+// Blank delivery lines are excluded; valid second lines/PO boxes/CU stay.
+const addressInputs=[
+  {...base,SOURCE_OID:20,MailAddr1:null,MailAddr2:null},
+  {...base,SOURCE_OID:21,MailAddr1:'  \t ',MailAddr2:'\r\n'},
+  {...base,SOURCE_OID:22,MailAddr1:'',MailAddr2:'PO BOX 123'},
+  {...base,SOURCE_OID:23,MailAddr1:'PO BOX 456',MailAddr2:''},
+  {...base,SOURCE_OID:24,OwnerName:'UNIVERSITY OF COLORADO',MailAddr1:'',MailAddr2:''},
+  {...base,SOURCE_OID:25,MailCity:'',MailZip:''}
+]
+const before=JSON.stringify(addressInputs), addressResult=cleanup(addressInputs)
+assert.equal(addressResult.rows.length,4)
+assert.equal(addressResult.audit.length,6)
+for(const id of [20,21]){
+  const audit=addressResult.audit.find(r=>r.SOURCE_OID===id)
+  assert.equal(audit.EXCLUSION,'No mailing address: both delivery lines are blank')
+  assert.equal(audit.MAIL_ID,'')
+}
+assert(addressResult.rows.some(r=>r.ADDRESS2==='PO BOX 123'))
+assert(addressResult.rows.some(r=>r.ADDRESS==='PO BOX 456'))
+assert(addressResult.rows.some(r=>r.NAME==='UNIVERSITY OF COLORADO'&&r.ADDRESS==='453 UCB'))
+assert.equal(JSON.stringify(addressInputs),before)
+const allExcluded=cleanup(addressInputs.slice(0,2))
+assert.equal(allExcluded.rows.length,0)
+assert.equal(allExcluded.audit.length,2)
+assert.equal(csv(allExcluded.rows,ctx.exports.fields).split('\r\n').length,1)
+console.log('PASS: blank-address exclusion, second lines/PO boxes/CU, unchanged raw inputs, header-only CSV, ZIP variants, legal entities and safe CSV.')

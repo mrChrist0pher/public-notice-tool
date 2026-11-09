@@ -12,3 +12,7 @@ Captured November 8, 2026 from the installed Developer Edition 1.17 widget. The 
 | `manifest.json` | `6f7e39ad193516c5bf39e3538933a609654dffac8b4c16b41ee722e94585eba2` | `6f7e39ad193516c5bf39e3538933a609654dffac8b4c16b41ee722e94585eba2` |
 
 Intentional packaging differences: widget service-host repair is configurable; config has placeholder layer IDs, no obsolete print-service URL, and frame dimensions matching the PDF. See MODIFICATIONS.md. Cleanup, PDF layout, logo and manifest are byte-for-byte snapshots. The test resolves TypeScript from EXB_CLIENT instead of a personal path. An original envelope icon replaces the stock sample icon.
+
+## Later changes
+
+These hashes describe the November 8 baseline, not the current files after later edits. November 9 adds the blank-address rule and individual comments, changes the web handler to cleaned CSV only, and fixes the hosted logo URL. See MODIFICATIONS.md and the Git history for subsequent changes.

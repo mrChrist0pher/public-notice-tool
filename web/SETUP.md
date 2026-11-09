@@ -14,7 +14,7 @@
 2. In `<EXB>/client`, add the packages used by custom code:
 
 ```console
-npm install --save-exact pdf-lib@1.17.1 qrcode@1.5.4 jszip@3.10.1
+npm install --save-exact pdf-lib@1.17.1 qrcode@1.5.4
 npm install --save-dev --save-exact @types/qrcode@1.5.5
 npm run build:dev
 ```
@@ -61,10 +61,11 @@ From this repository's `web` directory, set `EXB_CLIENT` to your installed clien
 ```console
 node test-cleanup.cjs
 node test-pdf.cjs
+node test-download.cjs
 ```
 
 The PDF check creates an in-memory synthetic Letter page and checks the clickable case link. It does not decode the QR or verify live map scale. Packaging checks passed for cleanup, synthetic PDF and TypeScript against the installed 1.17 client.
 
-Build within the installed client after copying the source. Then use a known case and verify: typing works; submitting a second case clears old work; full multi-polygon case is used; 300/600 results match a trusted geodesic selection; adjacent/manual/table changes synchronize; no empty/full-layer accidental export; correct two-CSV ZIP naming; logo and square frame; feet scale; QR opens the chosen case; no recipient buffer in the location PDF.
+Build within the installed client after copying the source. Then use a known case and verify: typing works; submitting a second case clears old work; full multi-polygon case is used; 300/600 results match a trusted geodesic selection; adjacent/manual/table changes synchronize; no empty/full-layer accidental export; correct single cleaned CSV naming and blank-address exclusions; logo and square frame; feet scale; QR opens the chosen case; no recipient buffer in the location PDF.
 
 Production hosting, deployment base paths, authorization/CORS and widget registration must be tested separately. No live service or production app is published by adding this folder to GitHub.
