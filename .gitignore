@@ -20,3 +20,9 @@ notice_config_local.py
 notice_layout_assets/
 outputs/
 node_modules/
+
+# Local web deployment settings and generated bundles
+dist/
+config.local.json
+app-config.local.json
+*.bak

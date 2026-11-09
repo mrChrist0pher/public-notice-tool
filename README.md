@@ -1,22 +1,28 @@
 # Public Notice Tool
 
-ArcGIS Pro Python toolbox for preparing a case vicinity map, selecting owner recipients, and generating a mailing list. The larger project also has a separate Experience Builder web prototype; this initial repository contains the Python implementation and process documentation.
+ArcGIS Pro Python toolbox for preparing a case vicinity map, selecting owner recipients, and generating a mailing list. This repository includes the Python implementation, the separate Experience Builder web prototype, and process documentation.
+
+## Implementations
+
+- `pro/`: ArcGIS Pro Python toolbox and helpers.
+- [`web/`](web/README.md): custom TypeScript/React widget, PDF/QR, browser cleanup and Experience Builder metadata.
+- [What we modified in the web project](web/MODIFICATIONS.md): custom code versus stock Esri widgets, app wiring and map styling.
 
 ## Start here
 
 - [Requirements and setup](docs/requirements.md)
 - [Manual process](docs/manual-process.md)
-- [Process maps](docs/process-maps.md) â€” left-to-right diagrams with **P&DS GIS** steps outlined
+- [Process maps](docs/process-maps.md) — left-to-right diagrams with **P&DS GIS** steps outlined
 - [Toolbox workflow and outputs](docs/toolbox-workflow.md)
 - [Cleanup rules](docs/cleanup-rules.md)
 - [Architecture and status](docs/architecture.md)
 
 Keep all files in `pro/` together. Add `pro/PublicNoticeMap.pyt` to ArcGIS Pro Catalog. It offers:
 
-1. **Prepare Notice Map** â€” find the case, frame its polygons, update case text and QR.
-2. **Export Notice Map** â€” after map/QR confirmation, save the VM PDF and case APRX.
-3. **Select Recipients** â€” 300 feet, 600 feet, Adjacent starting selection, or Custom.
-4. **Export Mailing List** â€” use the final adjusted selection; save raw records and cleaned Excel/CSV.
+1. **Prepare Notice Map** — find the case, frame its polygons, update case text and QR.
+2. **Export Notice Map** — after map/QR confirmation, save the VM PDF and case APRX.
+3. **Select Recipients** — 300 feet, 600 feet, Adjacent starting selection, or Custom.
+4. **Export Mailing List** — use the final adjusted selection; save raw records and cleaned Excel/CSV.
 
 The tools operate on layers already present in the open Pro project. No REST endpoint inventory, database connection files, credentials, production project files, or recipient data are included. A working template and authorized source access must be supplied locally.
 
