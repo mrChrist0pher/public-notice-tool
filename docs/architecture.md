@@ -16,7 +16,7 @@ The exported case APRX separates the reviewed VM map/frame from a mailing-work m
 
 ## Web prototype
 
-A separate custom Experience Builder widget handles the web workflow in JavaScript. It does not execute these Python tools. It has case search, owner-only geodesic selection, manual adjustments, local cleanup/CSV generation and browser-generated PDF with QR. Current interface includes a dark left panel. Street labels include type/direction and are thinned to segment IDs ending in 0,3,6,9. Deployment-specific web source/config is not bundled in this Python-only initial repository.
+A separate custom Experience Builder widget handles the web workflow in JavaScript. It does not execute these Python tools. It has case search, owner-only geodesic selection, manual adjustments, local cleanup/CSV generation and browser-generated PDF with QR. Current interface includes a dark left panel. Street labels include type/direction and are thinned to segment IDs ending in 0,3,6,9. Custom web source is now included in `web/`; see its MODIFICATIONS.md for ownership and packaging changes, SETUP.md for local app/data-source wiring, and MAP-STYLING.md for the separately saved map. Full authenticated app JSON and source service URLs remain local.
 
 ## What remains manual or pending
 
@@ -29,6 +29,6 @@ A separate custom Experience Builder widget handles the web workflow in JavaScri
 
 ## Packaging boundary
 
-This initial repository contains source, offline synthetic tests and fresh documentation. It deliberately excludes deployment credentials, endpoint inventories, local paths, source-layer extracts, internal project notes, source documents, case files, artwork and proprietary ArcGIS runtime files. Local configuration is ignored. No permission changes or production publishing are performed by this code.
+This initial repository contains source, offline synthetic tests and fresh documentation. It deliberately excludes deployment credentials, endpoint inventories, local paths, source-layer extracts, internal project notes, source documents, case files and proprietary ArcGIS runtime files. The existing City seal is included in the private web source snapshot, with no redistribution license asserted. Local configuration is ignored. No permission changes or production publishing are performed by this code.
 
 No claim is made that this packaging change alone is a full live Pro regression test. An organization-supplied template and local configuration are required for live verification.

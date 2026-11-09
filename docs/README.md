@@ -1,8 +1,12 @@
 # Project documentation
 
-- [Requirements](requirements.md)
+- [Pro requirements](requirements.md)
 - [Manual process](manual-process.md)
-- [Process maps](process-maps.md)
-- [Toolbox workflow](toolbox-workflow.md)
+- [Left-to-right process maps](process-maps.md)
+- [Pro toolbox workflow](toolbox-workflow.md)
 - [Cleanup rules](cleanup-rules.md)
-- [Architecture](architecture.md)
+- [Architecture and status](architecture.md)
+- [Web project](../web/README.md)
+- [What we modified in Experience Builder](../web/MODIFICATIONS.md)
+- [Web setup and local app wiring](../web/SETUP.md)
+- [Map styling and labels](../web/MAP-STYLING.md)
