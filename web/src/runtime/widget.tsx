@@ -13,7 +13,6 @@ import * as reactiveUtils from 'esri/core/reactiveUtils'
 
 
 
-import JSZip from 'jszip'
 import esriRequest from 'esri/request'
 import { makeNoticePdf } from './pdf-layout'
 import { cleanup, csv, fields } from './cleanup'
@@ -147,7 +146,7 @@ export default function Widget(props:AllWidgetProps<any>) {
       await reactiveUtils.whenOnce(()=>!printView.updating)
       const mapScreenshot=await printView.takeScreenshot({width:Math.round(cfg.frameWidth*300),height:Math.round(cfg.frameHeight*300),format:'png'})
       if(ticket!==operation.current)return
-      const logoData=await esriRequest(new URL('/widgets/pds-public-notice/dist/runtime/assets/city-logo.png',window.location.origin).href,{responseType:'array-buffer'})
+      const logoData=await esriRequest(new URL('widgets/pds-public-notice/dist/runtime/assets/city-logo.png',document.baseURI).href,{responseType:'array-buffer'})
       const groundLine=new Polyline({paths:[[[extent.xmin,center.y],[extent.xmax,center.y]]],spatialReference:ex.spatialReference})
       const groundFeet=geometryEngine.geodesicLength(groundLine,'meters')*3.280839895*(roundedScale/exactScale)
       const feetPerPoint=groundFeet/(cfg.frameWidth*72)
@@ -159,16 +158,24 @@ export default function Widget(props:AllWidgetProps<any>) {
       setMessage('Location map downloaded with a QR code linking to '+caseRef.current+' in the Property Information map. Scan it to confirm the correct case opens.')
     }finally{printView.destroy();div.remove()}
   })}
-  async function generate(){await work(async ticket=>{cancelPick();if(!selected.current.size)throw Error('Select recipients first. An empty selection never exports all parcels.')
+  // MAILING DOWNLOAD: Clean the user's final selection and download one CSV.
+  // No raw selection, audit file, or ZIP is saved by the web download button.
+  async function generate(){await work(async ticket=>{
+    cancelPick()
+    if(!selected.current.size)throw Error('Select recipients first. An empty selection never exports all parcels.')
     if(appliedMode!==mode)throw Error('Run the chosen selection method before exporting its list.')
-    const captured=Array.from(selected.current.values()).map(f=>({...f.attributes,SOURCE_OID:f.attributes[owners().objectIdField]}));const cleaned=cleanup(captured);const zip=new JSZip();const prefix=caseRef.current
-    // ML is the cleaned list; ML_<selection> preserves the raw selection,
-    // following the production DBF naming stem in a modern CSV format.
-    const selectionName=mode==='adjacent'?'ADJ':mode==='custom'?'CUSTOM':mode
-    const rawColumns=Array.from(new Set(captured.flatMap(row=>Object.keys(row))))
-    zip.file(prefix+'_ML.csv',csv(cleaned.rows,fields))
-    zip.file(prefix+'_ML_'+selectionName+'.csv',csv(captured,rawColumns))
-    const blob=await zip.generateAsync({type:'blob'});if(ticket!==operation.current)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=prefix+'_ML.zip';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);setResult(cleaned);setMessage('Downloaded '+prefix+'_ML.csv - cleaned mailing list, and '+prefix+'_ML_'+selectionName+'.csv - original selection record.')
+    // Cleanup uses a temporary in-memory copy; county source records are not edited.
+    const captured=Array.from(selected.current.values()).map(f=>({...f.attributes,SOURCE_OID:f.attributes[owners().objectIdField]}))
+    const cleaned=cleanup(captured)
+    // Export only the eight mailing fields. Excluded rows never enter cleaned.rows.
+    // If all selected rows are excluded, the CSV contains column headers only.
+    const blob=new Blob([csv(cleaned.rows,fields)],{type:'text/csv;charset=utf-8'})
+    if(ticket!==operation.current)return
+    const url=URL.createObjectURL(blob)
+    const a=document.createElement('a');a.href=url;a.download=caseRef.current+'_ML.csv';a.click()
+    setTimeout(()=>URL.revokeObjectURL(url),60000)
+    setResult(cleaned)
+    setMessage('Downloaded '+caseRef.current+'_ML.csv - '+cleaned.rows.length+' cleaned mailing destinations.')
   })}
   const button=(label:string,fn:()=>void,disabled=false)=><button type="button" disabled={busy||disabled} onClick={fn} style={{padding:'10px 12px',border:'1px solid '+((busy||disabled)?'#46515d':'#399aaa'),borderRadius:4,background:(busy||disabled)?'#303943':'#176b78',color:(busy||disabled)?'#aebbc8':'#ffffff',width:'100%',margin:'5px 0',cursor:'pointer'}}>{label}</button>
   return <div className="jimu-widget pds-notice-dark" style={{colorScheme:'dark',height:'100%',overflowY:'auto',padding:16,fontSize:14,color:'#e8eef4',background:'#18212b'}}>
@@ -200,7 +207,7 @@ export default function Widget(props:AllWidgetProps<any>) {
     <div style={{display:'flex',gap:8,alignItems:'center'}}><label>Adjust: <select aria-label="Selection adjustment" value={action} disabled={busy} onChange={e=>{cancelPick();setAction(e.target.value)}}><option value="add">Add parcels</option><option value="remove">Remove parcels</option></select></label></div>
     {button('Pick parcels on map',pick,!caseNo)}{button('Finish adjusting',()=>{cancelPick();setMessage(count+' records ready for review.')},!caseNo)}
     <strong>{count} owner records selected</strong>
-    <hr/><h3 style={{fontSize:17,color:'#ffffff'}}>4. Mailing list</h3><p>Generate the cleaned mailing list as a CSV. Matching destinations are combined and distinct owners stay separate. The download also includes a raw CSV of the selected owner records for your case files.</p>
+    <hr/><h3 style={{fontSize:17,color:'#ffffff'}}>4. Mailing list</h3><p>Download the cleaned mailing list as a CSV. Matching destinations are combined, distinct owners stay separate, and records with both mailing address lines blank are excluded.</p>
     {button('Generate mailing list',()=>void generate(),!count||appliedMode!==mode)}
     {result&&<p>{result.rows.length} mailing destinations - CSV ready to use</p>}
     <div role="status" aria-live="polite" style={{marginTop:12,padding:10,background:'#253442',borderRadius:4}}>{message}</div>
