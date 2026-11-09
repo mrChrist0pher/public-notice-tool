@@ -1,0 +1,10 @@
+{
+  "caseLayerId": "SET_CASE_LAYER_ID",
+  "ownerLayerId": "SET_OWNER_LAYER_ID",
+  "caseField": "CASENUMBER",
+  "caseServiceUrl": "",
+  "frameWidth": 8,
+  "frameHeight": 8.5,
+  "scaleStep": 1200,
+  "minPrintScale": 2400
+}

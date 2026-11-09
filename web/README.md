@@ -24,6 +24,7 @@ Changing method requires Run again before mailing export. An empty selection can
 | config.json / manifest.json | Required Experience Builder widget metadata/default settings |
 | icon.svg | Original envelope icon supplied during repository packaging |
 | test-cleanup.cjs | Synthetic cleanup regression checks |
+| test-pdf.cjs | Synthetic PDF page size and clickable case-link check |
 
 The web app necessarily uses TypeScript/React and Experience Builder JSON metadata. The `pro/` implementation and its local settings remain Python.
 
