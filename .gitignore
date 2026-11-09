@@ -4,7 +4,7 @@ __pycache__/
 .env
 .env.*
 !.env.example
-notice_config.local.json
+notice_config_local.py
 *.aprx
 *.mxd
 *.mapx
