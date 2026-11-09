@@ -311,7 +311,9 @@ def export_mailing_list(output_folder=None, project=None):
             raise RuntimeError('User selection changed during export; no output published.')
         summary = [f'Case: {c.case}',f'Method seed: {mode}; final selection may include user edits.',
                    f'Selected records: {len(records)}',f'Mailing entries: {len(rows)}',
-                   f'Excluded City rows: {sum(bool(r["EXCLUSION"]) for r in audit)}',f'Entries needing review: {len(review)}',
+                   f'Excluded records (all reasons): {sum(bool(r["EXCLUSION"]) for r in audit)}',
+                   f'Excluded for blank mailing address: {sum(r["EXCLUSION"] == "No mailing address: both delivery lines are blank" for r in audit)}',
+                   f'Entries needing review: {len(review)}',
                    'ZIP5/ZIP+4 variants merge only when all other mailing fields match.',
                    'Distinct ZIP+4 conflicts output the common ZIP5 and require review.',
                    'Original values, parcel/account links and original ZIPs are retained in the audit.',

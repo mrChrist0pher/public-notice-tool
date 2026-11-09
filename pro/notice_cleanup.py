@@ -42,8 +42,11 @@ def _clean_recipient(raw):
         changes.append('Uppercase recognized state code')
 
     owner_key = clean['NAME'].upper()
+    # RULE: Exclude only the exact approved City identity, not similar owner names.
     if owner_key in CITY_OWNER_ALIASES:
         return clean, changes, flags, 'Exact approved City of Boulder owner identity'
+    # RULE: Route confirmed CU aliases to the approved Planning destination.
+    # Keep Foundation/Health and unconfirmed aliases at their source addresses.
     if (owner_key in CU_OWNER_ALIASES
             or (owner_key == 'REGENTS OF THE UNIVERSITY'
                 and clean['ADDRESS'].upper() == 'OF COLORADO')):
@@ -56,11 +59,19 @@ def _clean_recipient(raw):
     elif 'UNIVERSITY OF COLORADO' in owner_key or owner_key == 'BOULDER CITY OF':
         flags.append('Possible institutional alias: no automatic exclusion/override')
 
+    # RULE: Exclude from the CLEANED list if both mailing delivery lines are blank.
+    # Check after whitespace cleanup and the approved CU destination override.
+    # A PO box or populated second line counts as an address; never invent one.
+    # Preserve the original in raw selection files and the original-value audit.
+    if not clean['ADDRESS'] and not clean['ADDRESS2']:
+        return clean, changes, flags, 'No mailing address: both delivery lines are blank'
+
     # RULE C03: Do not guess legal-name continuations or move attention, PMB,
     # suite or second delivery lines. Preserve both address lines and CareOf;
     # flag ambiguous two-line entries for the operator to resolve.
     if clean['ADDRESS2']:
         flags.append('Two-line address: review owner/attention/delivery placement')
+    # RULE: Retain unusual nonblank addresses; do not guess a repair.
     if clean['ADDRESS'] and not re.match(r'^(\d|P\.?\s*O\.?\s*(BOX|B)|POST OFFICE|RR\b|HC\b)', clean['ADDRESS'], re.I):
         # 453 UCB passes because it begins with a number. This is screening,
         # not a USPS deliverability determination or a reason to discard mail.
@@ -70,12 +81,15 @@ def _clean_recipient(raw):
     for field in ('NAME', 'ADDRESS', 'CITY', 'STATE', 'ZIP'):
         if not clean[field]:
             flags.append('Missing ' + field)
+    # RULE: Preserve unknown state/region text and record an internal diagnostic.
     if clean['STATE'] and clean['STATE'] not in US_STATES:
         flags.append('Unrecognized US state/region: check international layout')
+    # RULE: Preserve postal text/leading zeros; do not invent a missing ZIP.
     if clean['ZIP'] in ('00000', '00000-0000'):
         flags.append('Placeholder postal code')
     elif clean['ZIP'] and not re.fullmatch(r'\d{5}(?:-\d{4})?', clean['ZIP']):
         flags.append('Non-US-format postal code: preserve and review')
+    # RULE: Preserve the supplied country; leave a blank country unknown.
     if clean['COUNTRY'] and clean['COUNTRY'].upper() not in ('US', 'USA', 'UNITED STATES', 'UNITED STATES OF AMERICA'):
         flags.append('International mailing: verify country/layout')
     return clean, changes, flags, ''
@@ -109,6 +123,7 @@ def clean_records(records):
             group['ids'].append(str(raw['SOURCE_OID']))
             group['zips'].add(clean['ZIP'])
             group['flags'].update(flags)
+        # RULE: Keep every source record in the audit, including exclusions/reasons.
         audit.append(dict(SOURCE_OID=raw['SOURCE_OID'], AccountNo=raw['AccountNo'], ParcelNo=raw['ParcelNo'],
                           MAIL_ID=group['MAIL_ID'] if group else '', EXCLUSION=excluded,
                           CHANGES='; '.join(changes), REVIEW_FLAGS='; '.join(flags),
@@ -117,8 +132,10 @@ def clean_records(records):
     for group in groups.values():
         clean, zips = group['clean'], group['zips']
         full = sorted(z for z in zips if re.fullmatch(r'\d{5}-\d{4}', z))
+        # RULE: Use the sole supplied ZIP+4 for a merged destination.
         if len(full) == 1:
             clean['ZIP'] = full[0]
+        # RULE: Conflicting extensions use common ZIP5; keep originals in audit.
         elif len(full) > 1:
             clean['ZIP'] = full[0][:5]
             group['flags'].add('Conflicting ZIP+4 extensions merged to ZIP5: verify destination')
