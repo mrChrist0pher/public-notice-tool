@@ -22,7 +22,7 @@ The historical notes assign many operating steps to GIS; responsibility for futu
 - **PN2:** assembled letter/map mailing package, as described in the operations notes.
 - **PN3:** combined records package including the mailing-list PDF for EnerGov.
 
-The code currently generates VM and ML outputs. PN/PN2/PN3 assembly, email, postal fulfillment and EnerGov work remain manual.
+The deployed web app currently generates a VM PDF and cleaned ML CSV. An ML PDF alongside the CSV is in the backlog and is not implemented. The separate Pro toolbox has its own documented outputs. PN/PN2/PN3 assembly, email, postal fulfillment and EnerGov work remain manual. PN2 and PN3 identify package types, not second and third mailings.
 
 ## Questions to confirm
 

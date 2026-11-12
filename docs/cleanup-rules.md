@@ -1,6 +1,6 @@
 # Implemented mailing cleanup rules
 
-Source of truth: `pro/notice_cleanup.py`. These are the current four-step toolbox rules, not the older experimental address-parser rules in historical notes.
+Implemented logic lives in `pro/notice_cleanup.py` and its browser counterpart `web/src/runtime/cleanup.ts`. The web source was reconciled to the deployed app on November 12, 2026. These are implemented cleanup rules, not the older experimental address-parser rules in historical notes; business approval and exceptional-recipient decisions remain distinct from implementation.
 
 1. Clean whitespace/null values; preserve spelling, punctuation, legal owner identity, care-of lines, units and both delivery lines.
 2. Uppercase recognized US state abbreviations. Preserve postal codes as text, including leading zeros and supplied ZIP+4; do not invent missing addresses or countries.

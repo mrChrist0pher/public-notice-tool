@@ -14,9 +14,11 @@ Layers are inputs, not copies embedded in code. The template owns the authentica
 
 The exported case APRX separates the reviewed VM map/frame from a mailing-work map/frame. Later mailing navigation does not change the VM frame, but the APRX still references live source data. The raw selected feature class is the geometry-and-attributes snapshot; a raw CSV/DBF alone does not preserve geometry.
 
-## Web prototype
+## Deployed web application
 
-A separate custom Experience Builder widget handles the web workflow in JavaScript. It does not execute these Python tools. It has case search, owner-only geodesic selection, manual adjustments, local cleanup/CSV generation and browser-generated PDF with QR. Current interface includes a dark left panel. Street labels include type/direction and are thinned to segment IDs ending in 0,3,6,9. Custom web source is now included in `web/`; see its MODIFICATIONS.md for ownership and packaging changes, SETUP.md for local app/data-source wiring, and MAP-STYLING.md for the separately saved map. Full authenticated app JSON and source service URLs remain local.
+A separate custom Experience Builder widget handles the web workflow in JavaScript. It does not execute these Python tools. It has the original stock case Search, owner-only geodesic selection, manual adjustments, local cleanup/CSV generation and browser-generated PDF with QR. Version 9 is deployed internally and was reconciled November 12, 2026; see [current behavior](current-behavior.md). The dark panel and separately maintained web map remain part of the app wiring. See web/MODIFICATIONS.md for custom versus Esri code, web/SETUP.md for wiring and web/MAP-STYLING.md for map styling. Authenticated app JSON and internal service URLs remain local.
+
+Proposed recordkeeping uses one feature service containing selected-parcel polygons and related notice-run/event records, plus a small authenticated server writer so planners remain Viewers. Chris maintains the setup. No writer or storage service has been implemented. See [backlog architecture](backlog.md#save-notification-selections-and-activity-records).
 
 ## What remains manual or pending
 
