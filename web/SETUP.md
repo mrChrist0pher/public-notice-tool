@@ -62,6 +62,7 @@ From this repository's `web` directory, set `EXB_CLIENT` to your installed clien
 node test-cleanup.cjs
 node test-pdf.cjs
 node test-download.cjs
+node test-repeat-export.cjs
 ```
 
 The PDF check creates an in-memory synthetic Letter page and checks the clickable case link. It does not decode the QR or verify live map scale. Packaging checks passed for cleanup, synthetic PDF and TypeScript against the installed 1.17 client.

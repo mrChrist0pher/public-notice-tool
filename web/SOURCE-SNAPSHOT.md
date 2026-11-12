@@ -1,5 +1,19 @@
 # Source snapshot
 
+## Current reconciliation November 12 2026
+
+Deployed app version: 9. The deployed widget.js hash matches the installed dist-prod widget.js. The following local source-package files match their installed Developer Edition copies byte for byte:
+
+| File | Verified SHA-256 |
+|---|---|
+| src/runtime/widget.tsx | 70231a1ab2dd9a4f3458ac011c3bc826c5f164c50477046bb7c6b303e04f7f5d |
+| src/runtime/pdf-layout.ts | e79c2c0556d9514aa8b56ab33719c86a24c5bb10754b7036a5fdfacda7aff833 |
+| src/runtime/cleanup.ts | ac5ace841ae1e89dfaab11753510f2f9fe4bd578bcc410277fbb9410c7eac0ad |
+
+This verifies source copies and the deployed/built bundle; it does not reconstruct a historical Git commit for the deployment. No runtime changes were made by the November 12 documentation sync. Configuration remains intentionally deployment-specific, including a recorded frame-dimension discrepancy; see current-behavior.md and the backlog.
+
+## Historical baseline November 8 2026
+
 Captured November 8, 2026 from the installed Developer Edition 1.17 widget. The installed app was not edited by this repository packaging. Hashes identify the exact baseline; this is not a commit history of earlier edits.
 
 | File | Installed SHA-256 | Repository SHA-256 |
@@ -15,4 +29,4 @@ Intentional packaging differences: widget service-host repair is configurable; c
 
 ## Later changes
 
-These hashes describe the November 8 baseline, not the current files after later edits. November 9 adds the blank-address rule and individual comments, changes the web handler to cleaned CSV only, and fixes the hosted logo URL. See MODIFICATIONS.md and the Git history for subsequent changes.
+The historical table describes the November 8 baseline, not current files. November 9 added the blank-address rule and individual comments, CSV-only download and hosted logo fix. November 10 changed the footer and fixed repeat PDF exports while retaining original Search. The current hashes above identify the reconciled source; see MODIFICATIONS.md for changes. No mailing-list PDF is implemented.

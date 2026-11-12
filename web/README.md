@@ -1,6 +1,6 @@
 # Experience Builder public notice widget
 
-This is the custom web implementation, separate from the ArcGIS Pro Python toolbox. It runs selection, mailing cleanup, QR generation and PDF layout in the browser; it does not call Python or a geoprocessing service. This is a local Developer Edition prototype, not a production deployment.
+This is the custom web implementation, separate from the ArcGIS Pro Python toolbox. It runs selection, mailing cleanup, QR generation and PDF layout in the browser; it does not call Python or a geoprocessing service. The app is deployed internally on the City server. Version 9 and matching source/build were verified November 12, 2026. See [current behavior](../docs/current-behavior.md) and [backlog](../docs/backlog.md); deployment does not establish complete business-rule acceptance.
 
 Start with [MODIFICATIONS.md](MODIFICATIONS.md) for exactly what we changed, [SETUP.md](SETUP.md) to install and wire an app, and [MAP-STYLING.md](MAP-STYLING.md) to recreate the underlying map. [SOURCE-SNAPSHOT.md](SOURCE-SNAPSHOT.md) records installed-source hashes and repository packaging differences.
 

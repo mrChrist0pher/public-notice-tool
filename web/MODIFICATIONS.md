@@ -50,3 +50,12 @@ Esri supplies Experience Builder, React/Jimu framework, Maps SDK and stock widge
 - Web Generate now downloads only CASE_ML.csv. Removed JSZip from the custom widget and removed raw-file wording. Pro retains its separately documented archive/audit workflow.
 - Added synthetic checks for exclusions and the actual single-CSV download handler.
 - Hosted PDF logo URL now resolves relative to document.baseURI, not the server root.
+
+## November 10 PDF follow-up
+
+- Retained the original stock Search UI. Grouped/custom search is not included.
+- PDF exports now reconstruct a private basemap from JSON on every run, so print-view destruction cannot destroy a shared basemap layer needed by the next export.
+- Added bounded rendering waits, failure cleanup, captured case identity, and operation-aware busy-state cleanup.
+- Case service resolution uses the optional widget override, then the configured standalone case data-source URL, then the map layer URL. No internal endpoint is added to source.
+- Added test-repeat-export.cjs and verified two different real cases export sequentially without refreshing in the browser preview. Deployed as version 9; version 6 retained for rollback. Source and documentation are being reconciled to GitHub on November 12.
+
