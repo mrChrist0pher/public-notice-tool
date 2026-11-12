@@ -1,11 +1,13 @@
 # Public Notice Tool
 
-ArcGIS Pro Python toolbox for preparing a case vicinity map, selecting owner recipients, and generating a mailing list. This repository includes the Python implementation, the separate Experience Builder web prototype, and process documentation.
+Public notice map and owner mailing-list tools for City of Boulder P&DS GIS. The Experience Builder web app is deployed internally; the separate ArcGIS Pro toolbox remains available. Repository code, behavior, rules and tests are separate from GIS Work project context.
+
+Current status was reconciled November 12, 2026 with deployed version 9. See [current web behavior](docs/current-behavior.md), the [product backlog](docs/backlog.md), and the [verified source snapshot](web/SOURCE-SNAPSHOT.md). A PDF mailing list is requested but not implemented; the web app currently downloads a VM PDF and cleaned ML CSV separately.
 
 ## Implementations
 
 - `pro/`: ArcGIS Pro Python toolbox and helpers.
-- [`web/`](web/README.md): custom TypeScript/React widget, PDF/QR, browser cleanup and Experience Builder metadata.
+- [`web/`](web/README.md): deployed custom TypeScript/React widget, PDF/QR, browser cleanup and Experience Builder metadata.
 - [What we modified in the web project](web/MODIFICATIONS.md): custom code versus stock Esri widgets, app wiring and map styling.
 
 ## Start here
