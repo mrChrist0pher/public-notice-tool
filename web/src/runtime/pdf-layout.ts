@@ -39,7 +39,7 @@ export async function makeNoticePdf(mapImage:string,logoBytes:ArrayBuffer,caseNo
   for(const word of credits.split(' ')){if(regular.widthOfTextAtSize((line?line+' ':'')+word,4.5)>206){page.drawText(line,{x:388,y,size:4.5,font:regular,color:black});y-=5.5;line=word}else line+=(line?' ':'')+word}
   if(line)page.drawText(line,{x:388,y,size:4.5,font:regular,color:black})
   // Right-aligned credit sits below attribution in the source column.
-  const credit='Generated with City of Boulder Public Notice Tool'
+  const credit='Generated with City of Boulder Public Notice Web App, P&DS GIS'
   page.drawText(credit,{x:594-regular.widthOfTextAtSize(credit,6),y:Math.min(23,y-12),size:6,font:regular,color:black})
   // Generate from the selected case every export, using the same URL for the
   // QR, printed link and clickable PDF annotation. Four modules of quiet zone

@@ -8,6 +8,8 @@ import Polyline from 'esri/geometry/Polyline'
 
 import MapView from 'esri/views/MapView'
 import ArcGISMap from 'esri/Map'
+import Basemap from 'esri/Basemap'
+
 import * as geometryEngine from 'esri/geometry/geometryEngine'
 import * as reactiveUtils from 'esri/core/reactiveUtils'
 
@@ -17,17 +19,20 @@ import esriRequest from 'esri/request'
 import { makeNoticePdf } from './pdf-layout'
 import { cleanup, csv, fields } from './cleanup'
 
+
 const {useState,useRef,useEffect}=React
 export default function Widget(props:AllWidgetProps<any>) {
   const [jmv,setJmv]=useState<JimuMapView>(null),[caseNo,setCaseNo]=useState(''),[mode,setMode]=useState('300'),[action,setAction]=useState('add')
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('Find a case above to begin.'),[count,setCount]=useState(0),[result,setResult]=useState<any>(null),[pdf,setPdf]=useState(''),[appliedMode,setAppliedMode]=useState('')
   const selected=useRef<Map<number,any>>(new Map()),caseRef=useRef(''),operation=useRef(0),handle=useRef<any>(null),highlight=useRef<any>(null),areaLayer=useRef<GraphicsLayer>(null),mounted=useRef(true),searchEditing=useRef(false),pdfBlob=useRef('')
   const cfg=props.config
+
   const caseDs=()=>DataSourceManager.getInstance().getDataSource(props.useDataSources?.[0]?.dataSourceId) as any
   const ownerDs=()=>DataSourceManager.getInstance().getDataSource(props.useDataSources?.[1]?.dataSourceId) as any
   const layer=(id:string)=>jmv?.view.map.allLayers.find((l:any)=>l.id===id) as FeatureLayer
   const owners=()=>layer(cfg.ownerLayerId)
   const cases=()=>layer(cfg.caseLayerId)
+  const caseUrl=()=>cfg.caseServiceUrl||caseDs()?.getDataSourceJson?.()?.url||cases()?.url
   const cancelPick=()=>{handle.current?.remove();handle.current=null;if(jmv)(jmv.view as any).container.style.cursor=''}
   function clearNotice(){
     // Reset immediately when a new search starts, including pending async work.
@@ -57,8 +62,8 @@ export default function Widget(props:AllWidgetProps<any>) {
   },[jmv])
   // Repository packaging change: an optional local service URL replaces the
   // prototype's hard-coded short-host repair. No internal host is committed.
-  useEffect(()=>{if(!jmv)return;const old=cases();if(old&&cfg.caseServiceUrl&&old.url!==cfg.caseServiceUrl){
-    const fixed=new FeatureLayer({url:cfg.caseServiceUrl,id:old.id,title:'Subject Area',definitionExpression:'1=0',renderer:old.renderer,popupTemplate:old.popupTemplate})
+  useEffect(()=>{if(!jmv)return;const old=cases();if(old&&caseUrl()&&old.url!==caseUrl()){
+    const fixed=new FeatureLayer({url:caseUrl(),id:old.id,title:'Subject Area',definitionExpression:'1=0',renderer:old.renderer,popupTemplate:old.popupTemplate})
     const index=jmv.view.map.layers.indexOf(old);jmv.view.map.remove(old);jmv.view.map.add(fixed,index)
   }},[jmv])
   useEffect(()=>()=>{mounted.current=false;operation.current++;cancelPick();highlight.current?.remove();if(areaLayer.current)jmv?.view.map.remove(areaLayer.current)},[])
@@ -77,7 +82,7 @@ export default function Widget(props:AllWidgetProps<any>) {
     if(!caseRef.current)throw Error('Select one case using Search first.')
     const l=cases();if(!l)throw Error('Case layer is unavailable. Check the connected map.')
     // A fresh service layer avoids inheriting a search result's object-ID filter.
-    const queryLayer=new FeatureLayer({url:l.url,layerId:l.layerId});await queryLayer.load()
+    const queryLayer=new FeatureLayer({url:caseUrl(),layerId:l.layerId});await queryLayer.load()
     const q=queryLayer.createQuery();q.where=cfg.caseField+" = '"+caseRef.current.replace(/'/g,"''")+"'";q.outFields=[cfg.caseField];q.returnGeometry=true;q.outSpatialReference=jmv.view.spatialReference
     const fs=await queryLayer.queryFeatures(q)
     if(fs.exceededTransferLimit)throw Error('Case geometry is incomplete; service transfer limit reached.')
@@ -86,7 +91,7 @@ export default function Widget(props:AllWidgetProps<any>) {
     if(!geom?.extent)throw Error('Case geometry is empty.')
     return geom
   }
-  async function work(fn:(ticket:number)=>Promise<void>){const ticket=++operation.current;setBusy(true);setMessage('Working…');try{await fn(ticket)}catch(e){if(ticket===operation.current)setMessage('Could not finish: '+e.message)}finally{if(mounted.current)setBusy(false)}}
+  async function work(fn:(ticket:number)=>Promise<void>){const ticket=++operation.current;setBusy(true);setMessage('Working…');try{await fn(ticket)}catch(e){if(ticket===operation.current)setMessage('Could not finish: '+e.message)}finally{if(mounted.current&&ticket===operation.current)setBusy(false)}}
   // Query IDs first, then page by IDs: no silent 1,000/2,000-record truncation.
   async function within(geom:__esri.Geometry){const l=owners();if(!l)throw Error('Owner parcels are unavailable.');await l.load();const q=l.createQuery();q.where='1=1';q.geometry=geom;q.spatialRelationship='intersects';const ids=await l.queryObjectIds(q)||[];const all=[]
     for(let start=0;start<ids.length;start+=400){const b=l.createQuery();b.where='1=1';b.objectIds=ids.slice(start,start+400);b.outFields=['*'];b.returnGeometry=true;b.outSpatialReference=jmv.view.spatialReference;const fs=await l.queryFeatures(b);if(fs.exceededTransferLimit)throw Error('Incomplete recipient batch; nothing exported.');all.push(...fs.features)}
@@ -118,22 +123,36 @@ export default function Widget(props:AllWidgetProps<any>) {
     handle.current=view.on('click',event=>{event.stopPropagation();if(busy)return;const p=view.toMap({x:event.x,y:event.y});if(!p)return;void work(async ticket=>{const fs=await within(geometryEngine.buffer(p,view.resolution*3,'meters') as __esri.Polygon);if(ticket!==operation.current)return;fs.forEach(f=>{const id=f.attributes[owners().objectIdField];if(action==='remove')selected.current.delete(id);else selected.current.set(id,f)});await showSelection();setMessage(selected.current.size+' records selected. Continue clicking or finish adjusting.')})})
   }
   async function exportMap(){await work(async ticket=>{const geom=await subject();const ex=geom.extent;const width=ex.width*5;const height=width*cfg.frameHeight/cfg.frameWidth
+    if(ticket!==operation.current)return
+    const exportCase=caseRef.current
+    // Bound waits so an unavailable tile or service cannot leave Working forever.
+    const deadline=Date.now()+90000
+    async function waitFor<T>(promise:PromiseLike<T>):Promise<T>{let timer:any
+      try{return await Promise.race([promise,new Promise<T>((_,reject)=>{timer=setTimeout(()=>reject(Error('PDF generation timed out. Please try again.')),Math.max(1,deadline-Date.now()))})])}
+      finally{clearTimeout(timer)}
+    }
     if(ex.height>height*.9)throw Error('This subject is too tall for 20% width in this frame. Choose a taller layout before exporting.')
     const center=ex.center
     // First fit the complete subject to 20% of the print-frame width.
     const extent=new Extent({xmin:center.x-width/2,xmax:center.x+width/2,ymin:center.y-height/2,ymax:center.y+height/2,spatialReference:ex.spatialReference})
     const div=document.createElement('div');Object.assign(div.style,{position:'fixed',left:'-10000px',top:'0',width:'900px',height:(900*cfg.frameHeight/cfg.frameWidth)+'px'});document.body.appendChild(div)
+    // Build independent basemap instances from JSON on EVERY export. Basemap.clone
+    // can retain shared tile-layer instances; destroying one print view must
+    // never destroy a live-map layer or an instance reused by a later export.
     const printLayers=jmv.view.map.layers.filter(l=>l.title!=='Notification area').map(l=>(l as any).clone())
-    printLayers.forEach((l:any)=>{if(l.id===cfg.caseLayerId){if(cfg.caseServiceUrl)l.url=cfg.caseServiceUrl;l.definitionExpression=cfg.caseField+" = '"+caseRef.current.replace(/'/g,"''")+"'"}})
-    const map=new ArcGISMap({basemap:jmv.view.map.basemap.clone(),layers:printLayers})
+    printLayers.forEach((l:any)=>{if(l.id===cfg.caseLayerId){l.url=caseUrl();l.definitionExpression=cfg.caseField+" = '"+caseRef.current.replace(/'/g,"''")+"'"}})
+    const privateBasemap=Basemap.fromJSON(jmv.view.map.basemap.toJSON())
+    const map=new ArcGISMap({basemap:privateBasemap,layers:printLayers})
+    let printView:MapView
+    try{
     // Suppress the city/place-name symbol layers in the PDF's private basemap.
     // Street labels remain; the interactive/shared web map is not changed.
-    await Promise.all([...map.basemap.baseLayers.toArray(),...map.basemap.referenceLayers.toArray()].filter(l=>l.type==='vector-tile').map(async(l:any)=>{
+    await waitFor(Promise.all([...map.basemap.baseLayers.toArray(),...map.basemap.referenceLayers.toArray()].filter(l=>l.type==='vector-tile').map(async(l:any)=>{
       await l.load();const style=l.currentStyleInfo?.style
       for(const item of style?.layers||[]){if(item.type==='symbol'&&/city|settlement|populated/i.test(item.id))l.setStyleLayerVisibility(item.id,'none')}
-    }))
-    const printView=new MapView({container:div,map,extent,rotation:0,ui:{components:[]},constraints:{snapToZoom:false}})
-    try{await printView.when();await printView.goTo(extent,{animate:false});if(ticket!==operation.current)return
+    })))
+    printView=new MapView({container:div,map,extent,rotation:0,ui:{components:[]},constraints:{snapToZoom:false}})
+    await waitFor(printView.when());await waitFor(printView.goTo(extent,{animate:false}));if(ticket!==operation.current)return
       // Convert the SDK view scale from its CSS-pixel frame to the physical
       // template frame. PrintingTools expects this SDK/projection scale; a
       // separate geodesic scale here would enlarge a Web Mercator print.
@@ -142,21 +161,21 @@ export default function Widget(props:AllWidgetProps<any>) {
       const scaleStep=cfg.scaleStep||1200;const roundedScale=Math.max(cfg.minPrintScale||2400,Math.ceil(exactScale/scaleStep)*scaleStep)
       // PrintingTools reuses the original vector-tile style URL. Capture the
       // styled, north-up print view at 300 dpi to preserve suppressed city names.
-      await printView.goTo(extent.clone().expand(roundedScale/exactScale),{animate:false})
-      await reactiveUtils.whenOnce(()=>!printView.updating)
-      const mapScreenshot=await printView.takeScreenshot({width:Math.round(cfg.frameWidth*300),height:Math.round(cfg.frameHeight*300),format:'png'})
+      await waitFor(printView.goTo(extent.clone().expand(roundedScale/exactScale),{animate:false}))
+      await waitFor(reactiveUtils.whenOnce(()=>!printView.updating))
+      const mapScreenshot=await waitFor(printView.takeScreenshot({width:Math.round(cfg.frameWidth*300),height:Math.round(cfg.frameHeight*300),format:'png'}))
       if(ticket!==operation.current)return
-      const logoData=await esriRequest(new URL('widgets/pds-public-notice/dist/runtime/assets/city-logo.png',document.baseURI).href,{responseType:'array-buffer'})
+      const logoData=await waitFor(esriRequest(new URL('widgets/pds-public-notice/dist/runtime/assets/city-logo.png',document.baseURI).href,{responseType:'array-buffer'}))
       const groundLine=new Polyline({paths:[[[extent.xmin,center.y],[extent.xmax,center.y]]],spatialReference:ex.spatialReference})
       const groundFeet=geometryEngine.geodesicLength(groundLine,'meters')*3.280839895*(roundedScale/exactScale)
       const feetPerPoint=groundFeet/(cfg.frameWidth*72)
       const credits=Array.from(new Set(map.allLayers.toArray().map((l:any)=>l.copyright).filter(Boolean))).join('; ')
-      const bytes=await makeNoticePdf(mapScreenshot.dataUrl,logoData.data,caseRef.current,feetPerPoint,credits)
+      const bytes=await waitFor(makeNoticePdf(mapScreenshot.dataUrl,logoData.data,exportCase,feetPerPoint,credits))
       if(ticket!==operation.current)return
       if(pdfBlob.current)URL.revokeObjectURL(pdfBlob.current);pdfBlob.current=URL.createObjectURL(new Blob([bytes as any],{type:'application/pdf'}));setPdf(pdfBlob.current)
-      const a=document.createElement('a');a.href=pdfBlob.current;a.download=caseRef.current+'_VM.pdf';a.click()
+      const a=document.createElement('a');a.href=pdfBlob.current;a.download=exportCase+'_VM.pdf';a.click()
       setMessage('Location map downloaded with a QR code linking to '+caseRef.current+' in the Property Information map. Scan it to confirm the correct case opens.')
-    }finally{printView.destroy();div.remove()}
+    }finally{if(printView)printView.destroy();else map.destroy();div.remove()}
   })}
   // MAILING DOWNLOAD: Clean the user's final selection and download one CSV.
   // No raw selection, audit file, or ZIP is saved by the web download button.
@@ -191,10 +210,14 @@ export default function Widget(props:AllWidgetProps<any>) {
       [data-widgetid="widget_18"] .search-con-Style1 { background: #25313e !important; border-color: #647585 !important; }
       [data-widgetid="widget_18"] .input-wrapper { background: #25313e !important; }
       [data-widgetid="widget_18"] { background: #18212b; color: #e8eef4; color-scheme: dark; }
+
+
+
       [data-widgetid="widget_18"] input { background: #25313e !important; color: #eef4fa !important; }
       [data-widgetid="widget_18"] input::placeholder { color: #bcc9d5 !important; opacity: 1; }
       [data-widgetid="widget_18"] button { background: #25313e; color: #eef4fa; }
     `}</style>
+
     {props.useMapWidgetIds?.[0]&&<JimuMapViewComponent useMapWidgetId={props.useMapWidgetIds[0]} onActiveViewChange={setJmv}/>}
     {props.useDataSources?.map((u,i)=><DataSourceComponent key={u.dataSourceId} useDataSource={u} widgetId={props.id} onSelectionChange={i===1?(ids)=>tableSelection(ids.asMutable()):(ids)=>{if(ids.length)searchEditing.current=false}}/>)}
     <div style={{fontWeight:600,marginBottom:12}}>{caseNo||'Find your case above'}</div>
@@ -213,6 +236,9 @@ export default function Widget(props:AllWidgetProps<any>) {
     <div role="status" aria-live="polite" style={{marginTop:12,padding:10,background:'#253442',borderRadius:4}}>{message}</div>
   </div>
 }
+
+
+
 
 
 
