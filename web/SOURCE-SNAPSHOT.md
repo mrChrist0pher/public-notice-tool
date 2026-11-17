@@ -1,5 +1,15 @@
 # Source snapshot
 
+## Live verification November 17 2026
+
+The deployed index selects `cdn/9/`. The live custom-widget bundle and the installed Developer Edition production bundle match byte for byte:
+
+`652ec267103a158fd6af575e571851de6df4110450414297cdc27cf1248fe7fd`
+
+The repository's `widget.tsx`, `pdf-layout.ts` and `cleanup.ts` also match installed source byte for byte, with the same hashes listed in the November 12 reconciliation below. No application code or deployment was changed. This is a file comparison, not a new browser regression test or a clean rebuild proving source-to-bundle reproducibility.
+
+Deployment-specific configuration remains separate from reusable repository defaults. This verification does not claim that Portal web-map content, authentication settings or all configuration files are identical to the repository templates. The recorded frame-dimension discrepancy remains open. Recent process-map and project-note changes are separate from this application-source verification.
+
 ## Current reconciliation November 12 2026
 
 Deployed app version: 9. The deployed widget.js hash matches the installed dist-prod widget.js. The following local source-package files match their installed Developer Edition copies byte for byte:
