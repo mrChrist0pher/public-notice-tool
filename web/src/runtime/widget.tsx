@@ -18,6 +18,7 @@ import * as reactiveUtils from 'esri/core/reactiveUtils'
 import esriRequest from 'esri/request'
 import { makeNoticePdf } from './pdf-layout'
 import { cleanup, csv, fields } from './cleanup'
+import { vendorEmailUrl } from './vendor-email'
 
 
 const {useState,useRef,useEffect}=React
@@ -202,6 +203,17 @@ export default function Widget(props:AllWidgetProps<any>) {
     setResult(cleaned)
     setMessage('Downloaded '+caseRef.current+'_ML.csv - '+cleaned.rows.length+' cleaned mailing destinations.')
   })}
+  function prepareEmail(){
+    try{
+      // The cleaned result is cleared whenever the case, mode, custom radius or
+      // parcel selection changes. Only a current generated list enables this.
+      if(busy||!result?.rows?.length||appliedMode!==mode)throw Error('Generate the current mailing list first.')
+      const method=mode==='custom'?customRadius+' feet (custom)':mode==='adjacent'?'Adjacent, with any manual adjustments':mode+' feet, with any manual adjustments'
+      const a=document.createElement('a')
+      a.href=vendorEmailUrl(caseRef.current,result.rows.length,method,cfg.mailingVendorEmail||'');a.click()
+      setMessage('Email draft requested in your default email application. Attach '+caseRef.current+'_ML.csv and the required notice/map files, fill in the mailing date and billing information, then review and send. Nothing is attached or sent automatically.')
+    }catch(e){setMessage('Could not prepare email: '+e.message)}
+  }
   const button=(label:string,fn:()=>void,disabled=false)=><button type="button" disabled={busy||disabled} onClick={fn} style={{padding:'10px 12px',border:'1px solid '+((busy||disabled)?'#46515d':'#399aaa'),borderRadius:4,background:(busy||disabled)?'#303943':'#176b78',color:(busy||disabled)?'#aebbc8':'#ffffff',width:'100%',margin:'5px 0',cursor:'pointer'}}>{label}</button>
   return <div className="jimu-widget pds-notice-dark" style={{colorScheme:'dark',height:'100%',overflowY:'auto',padding:16,fontSize:14,color:'#e8eef4',background:'#18212b'}}>
     <style>{`
@@ -246,6 +258,8 @@ export default function Widget(props:AllWidgetProps<any>) {
     <hr/><h3 style={{fontSize:17,color:'#ffffff'}}>4. Mailing list</h3><p>Download the cleaned mailing list as a CSV. Matching destinations are combined, distinct owners stay separate, and records with both mailing address lines blank are excluded.</p>
     {button('Generate mailing list',()=>void generate(),!count||appliedMode!==mode)}
     {result&&<p>{result.rows.length} mailing destinations - CSV ready to use</p>}
+    {button('Prepare vendor email',prepareEmail,!result?.rows?.length||appliedMode!==mode)}
+    <p>Opens a draft in your default email app. Attach the downloaded mailing list and required notice/map files before sending.{!cfg.mailingVendorEmail&&' Enter the vendor in the To field.'}</p>
     <div role="status" aria-live="polite" style={{marginTop:12,padding:10,background:'#253442',borderRadius:4}}>{message}</div>
   </div>
 }

@@ -1,5 +1,17 @@
 # Source snapshot
 
+## Prepare vendor email release November 17 2026
+
+Deployed bundle SHA-256: 88c73dc48c4ea628c2ae8cb560ce298b296d056a8f554dd214e66295af6e756b
+
+Version 11 adds a mailto draft button after generating a non-empty cleaned list. No automatic mail send or attachments. No vendor recipient is supplied until confirmed; optional deployment setting mailingVendorEmail leaves To blank if absent. All previous application configuration, including 2400 minimum scale and 1200 steps, is preserved. Version 10 retained for rollback. Six offline tests and the production build passed. No authenticated Outlook draft or send is asserted by these checks.
+
+Repository source hashes with LF line endings:
+- widget.tsx: 93f7e43ad18ba188104d9d4a2202ae17c916e21614ef37770480c72165277591
+- vendor-email.ts: 5e17c4dc0d185da906256e191be96680e292779f1b220aa920539b35d96a499e
+
+
+
 ## Custom radius release November 17 2026
 
 Production now selects version 10. Custom accepts positive numeric feet and buffers the full case geometry geodesically. Invalid distances are rejected; changing the input invalidates the previous selection run. Standard radii, Adjacent and manual Add/Remove remain available. CSV and PDF output formats are unchanged.

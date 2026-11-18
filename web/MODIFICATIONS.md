@@ -59,3 +59,7 @@ Esri supplies Experience Builder, React/Jimu framework, Maps SDK and stock widge
 - Case service resolution uses the optional widget override, then the configured standalone case data-source URL, then the map layer URL. No internal endpoint is added to source.
 - Added test-repeat-export.cjs and verified two different real cases export sequentially without refreshing in the browser preview. Deployed as version 9; version 6 retained for rollback. Source and documentation are being reconciled to GitHub on November 12.
 
+
+## November 17 vendor email follow-up
+
+Added vendor-email.ts and Prepare vendor email after a non-empty cleaned list is generated. A mailto draft includes the case, cleaned destination count and selection method. It uses the default email application, not an Outlook-specific API. Optional mailingVendorEmail is supplied in local deployment configuration; no recipient is assumed. Attachments, requested mailing date, billing information and Send remain manual. Existing result invalidation prevents preparing an email from an outdated selection. No background tracking or automatic mail delivery is included.

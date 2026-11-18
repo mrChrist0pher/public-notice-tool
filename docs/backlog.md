@@ -122,3 +122,9 @@ Use GlobalID/GUID relationship keys where required by the chosen ArcGIS relation
 ### Acceptance criteria
 
 A planner with Viewer permissions can generate outputs and receive confirmation that a final selection and its events were recorded. An authorized reviewer can retrieve the run, its parcel geometry and identifiers, verified user, counts, and event history. Repeated requests do not create duplicate runs or events. Failed saves remain visibly incomplete and recoverable. No server write credentials are exposed to the browser.
+
+## Vendor email draft November 17 2026
+
+- [x] Version 11 adds Prepare vendor email after a non-empty cleaned list is generated. Case, count and selection method are prefilled through mailto. Default email handler opens the draft. To stays blank unless mailingVendorEmail is configured locally.
+- [ ] Confirm the vendor recipient.
+- [ ] If automatic attachments are required, assess a City-approved Graph or Power Automate integration separately. Manual attachments and Send are required in version 11. This does not implement background tracking.

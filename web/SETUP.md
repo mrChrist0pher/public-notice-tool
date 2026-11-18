@@ -70,3 +70,7 @@ The PDF check creates an in-memory synthetic Letter page and checks the clickabl
 Build within the installed client after copying the source. Then use a known case and verify: typing works; submitting a second case clears old work; full multi-polygon case is used; 300/600 results match a trusted geodesic selection; adjacent/manual/table changes synchronize; no empty/full-layer accidental export; correct single cleaned CSV naming and blank-address exclusions; logo and square frame; feet scale; QR opens the chosen case; no recipient buffer in the location PDF.
 
 Production hosting, deployment base paths, authorization/CORS and widget registration must be tested separately. No live service or production app is published by adding this folder to GitHub.
+
+## Optional vendor email configuration
+
+Set `mailingVendorEmail` in the workflow widget configuration to a confirmed single vendor email address. Blank or absent leaves To blank. The button uses mailto and the default email handler, not Microsoft Graph. It never attaches files or sends mail. Add recipients locally; no historical vendor address is assumed. Run `node test-vendor-email.cjs` and `node test-radius.cjs` alongside the existing checks.

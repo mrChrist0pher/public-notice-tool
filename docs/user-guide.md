@@ -37,7 +37,9 @@ Your Downloads folder will contain:
 - **CASE_VM.pdf** — location map.
 - **CASE_ML.csv** — cleaned owner mailing list.
 
-Save the files with the case records and follow the usual mailing vendor and EnerGov handoff.
+After generating a non-empty list, click **Prepare vendor email**. It opens a draft in your default email app, with the case number, cleaned destination count and selection method filled in. Enter the vendor in To if blank. Attach the downloaded CSV and the required notice/map files; add the mailing date and billing/project details, review, then send. Nothing is attached or sent automatically. If no draft opens, check your default mail-app settings.
+
+Save the files with the case records and follow the usual EnerGov handoff.
 
 **Starting a new case search clears the previous notice work.**
 
