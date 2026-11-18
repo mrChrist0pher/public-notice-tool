@@ -1,5 +1,17 @@
 # Source snapshot
 
+## Custom radius release November 17 2026
+
+Production now selects version 10. Custom accepts positive numeric feet and buffers the full case geometry geodesically. Invalid distances are rejected; changing the input invalidates the previous selection run. Standard radii, Adjacent and manual Add/Remove remain available. CSV and PDF output formats are unchanged.
+
+Repository widget source SHA-256 (LF line endings): 961903317d6e83f05e441b117bff44e9aeae0a290591e5db79ac64064e17cd5e
+
+Deployed and installed production bundle SHA-256: 096e15ec7a14308d88ccc006ca316fde01eb9f63c69541f1dda4acb640845120
+
+Production configuration was copied unchanged from version 9, including explicit minimum scale 2400 and step 1200. Version 9 is retained for rollback. All five offline tests passed, including the real selection-handler custom-radius tests; production build passed. Browser verified Custom exposes an editable numeric field and accepts 450. Real-case browser selection was not tested because the session requires Portal sign-in. Fonts downloaded for the separate accessibility prototype are not part of this release.
+
+
+
 ## Live verification November 17 2026
 
 The deployed index selects `cdn/9/`. The live custom-widget bundle and the installed Developer Edition production bundle match byte for byte:

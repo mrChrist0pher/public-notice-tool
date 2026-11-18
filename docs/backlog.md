@@ -38,7 +38,7 @@ Need: Produce a printable record of exactly the cleaned mailing destinations exp
 - [ ] Recipient categories: find authoritative resident and business data, confirm notice rules, then add controls and separate processing modules. V1 remains owners only.
 - [ ] Notification-area map: decide whether recipients should see their properties; current location PDF fits the subject, not the full buffer.
 - [ ] Confirm whether case prefix, review type, or subtype determines distance. No automatic radius rule is approved or implemented.
-- [ ] Custom distance entry is distinct from current Custom manual selection; decide whether it is needed.
+- [x] November 17: version 10 adds a positive numeric Custom radius in feet, including decimals. Manual add/remove remains available.
 - [ ] Grouped search: deferred. The original stock Search is retained at the user's request; duplicate polygon results remain possible. Do not reintroduce the rejected custom-search prototype.
 - [ ] Compare generated outputs against approved historical cases and resolve selection discrepancies, rather than accepting count matches alone.
 - [ ] Postcard generation/form: discuss EnerGov fields, manual inputs, template/color rules and business ownership with Lisa. Find a County postcard example. No automated postcard workflow is implemented.

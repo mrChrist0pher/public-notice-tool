@@ -1,6 +1,6 @@
 # Experience Builder public notice widget
 
-This is the custom web implementation, separate from the ArcGIS Pro Python toolbox. It runs selection, mailing cleanup, QR generation and PDF layout in the browser; it does not call Python or a geoprocessing service. The app is deployed internally on the City server. Version 9 and matching source/build were verified November 12, 2026. See [current behavior](../docs/current-behavior.md) and [backlog](../docs/backlog.md); deployment does not establish complete business-rule acceptance.
+This is the custom web implementation, separate from the ArcGIS Pro Python toolbox. It runs selection, mailing cleanup, QR generation and PDF layout in the browser; it does not call Python or a geoprocessing service. The app is deployed internally on the City server. Version 10 adds custom numeric radius entry, deployed November 17, 2026. See [current behavior](../docs/current-behavior.md) and [backlog](../docs/backlog.md); deployment does not establish complete business-rule acceptance.
 
 Start with [MODIFICATIONS.md](MODIFICATIONS.md) for exactly what we changed, [SETUP.md](SETUP.md) to install and wire an app, and [MAP-STYLING.md](MAP-STYLING.md) to recreate the underlying map. [SOURCE-SNAPSHOT.md](SOURCE-SNAPSHOT.md) records installed-source hashes and repository packaging differences.
 
@@ -8,7 +8,7 @@ Start with [MODIFICATIONS.md](MODIFICATIONS.md) for exactly what we changed, [SE
 
 1. Use the stock Search widget to select a case. Search submission or explicit Clear resets the old buffer, selection and exports; typing/focus alone does not.
 2. Confirm subject location and generate `CASE_VM.pdf`. The browser captures a separate north-up map view at 300 dpi, adds the City logo, legend, feet-only scale bar, north arrow and case-specific QR/link. The interactive map extent is preserved. A print service is not required for this implementation.
-3. Choose 300 feet, 600 feet, Adjacent or Custom, then Run. Radius uses a geodesic buffer of the union of all matching case polygons. Radius selections include subject owners. Adjacent is a two-foot seed excluding subject-center parcels; manually add across-street recipients as appropriate. Custom keeps the current selection and allows manual add/remove.
+3. Choose 300 feet, 600 feet, Adjacent or Custom, then Run. Radius uses a geodesic buffer of the union of all matching case polygons. Radius selections include subject owners. Adjacent is a two-foot seed excluding subject-center parcels; manually add across-street recipients as appropriate. Custom accepts a positive numeric distance in feet; Run replaces the selection. Changing its value requires a new run. Manual add/remove remains available.
 4. Download only cleaned eight-field `CASE_ML.csv`. Records with both mailing delivery lines blank are excluded after text cleanup and the approved CU destination rule. PO boxes and a populated second line stay. No ZIP, raw-selection file, review file or audit file is downloaded.
 
 Changing method requires Run again before mailing export. An empty selection cannot export the entire layer. Table removals synchronize with the captured selection. Queries retrieve IDs first and features in batches of 400, checking completeness.

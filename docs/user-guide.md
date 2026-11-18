@@ -22,7 +22,7 @@ Choose the required method, then click **Run selection**:
 
 - **300 or 600 feet:** selects owner parcels within that distance of the case geometry.
 - **Adjacent:** starts with a small 2-foot buffer. Add across-street parcels as appropriate.
-- **Custom:** build the selection manually.
+- **Custom:** enter a radius greater than zero in feet, then click **Run selection**. Decimals are allowed. After changing the distance, run again before exporting.
 
 To adjust the selection, choose **Add parcels** or **Remove parcels**, click **Pick parcels on map**, and click the parcels. Click **Finish adjusting** when done.
 
@@ -41,5 +41,5 @@ Save the files with the case records and follow the usual mailing vendor and Ene
 
 **Starting a new case search clears the previous notice work.**
 
-*P&DS GIS · Owners-only workflow · Reconciled November 12, 2026*
+*P&DS GIS · Owners-only workflow · Updated November 17, 2026*
 

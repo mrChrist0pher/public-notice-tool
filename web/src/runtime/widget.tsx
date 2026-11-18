@@ -23,6 +23,9 @@ import { cleanup, csv, fields } from './cleanup'
 const {useState,useRef,useEffect}=React
 export default function Widget(props:AllWidgetProps<any>) {
   const [jmv,setJmv]=useState<JimuMapView>(null),[caseNo,setCaseNo]=useState(''),[mode,setMode]=useState('300'),[action,setAction]=useState('add')
+  // Custom is a distance in feet. Manual additions/removals are available for
+  // every radius and are handled separately by the map-picking controls below.
+  const [customRadius,setCustomRadius]=useState('')
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('Find a case above to begin.'),[count,setCount]=useState(0),[result,setResult]=useState<any>(null),[pdf,setPdf]=useState(''),[appliedMode,setAppliedMode]=useState('')
   const selected=useRef<Map<number,any>>(new Map()),caseRef=useRef(''),operation=useRef(0),handle=useRef<any>(null),highlight=useRef<any>(null),areaLayer=useRef<GraphicsLayer>(null),mounted=useRef(true),searchEditing=useRef(false),pdfBlob=useRef('')
   const cfg=props.config
@@ -109,15 +112,18 @@ export default function Widget(props:AllWidgetProps<any>) {
     if(wanted.size>selected.current.size){selected.current.clear();setCount(0);setMessage('Selection changed outside this panel. Run selection again before generating a list.')}
     else setMessage(selected.current.size+' records remain selected. Review before generating.')
   }
-  async function run(){await work(async ticket=>{const geom=await subject();if(ticket!==operation.current)return
-    if(mode==='custom'){setAppliedMode('custom');setMessage('Custom: use Add or Remove below, then click parcels on the map. Your current selection is retained.');return}
+  async function run(){cancelPick();await work(async ticket=>{
+    // Reject blank, zero, negative and non-finite distances before querying GIS.
+    const distance=mode==='adjacent'?2:Number(mode==='custom'?customRadius:mode)
+    if(!Number.isFinite(distance)||distance<=0)throw Error('Enter a radius greater than zero in feet, then run selection.')
+    const geom=await subject();if(ticket!==operation.current)return
     // Geodesic buffer is measured on the ground, including Web Mercator maps.
-    const area=geometryEngine.geodesicBuffer(geom,mode==='adjacent'?2:Number(mode),'feet') as __esri.Polygon
+    const area=geometryEngine.geodesicBuffer(geom,distance,'feet') as __esri.Polygon
     let fs=await within(area);if(ticket!==operation.current)return
     if(mode==='adjacent')fs=fs.filter(f=>!geometryEngine.contains(geom,(f.geometry as __esri.Polygon).centroid))
     selected.current=new Map(fs.map(f=>[f.attributes[owners().objectIdField],f]));await showSelection();setAppliedMode(mode);if(ticket!==operation.current)return
     if(!areaLayer.current){areaLayer.current=new GraphicsLayer({title:'Notification area',listMode:'hide'});jmv.view.map.add(areaLayer.current)}areaLayer.current.removeAll();areaLayer.current.add(new Graphic({geometry:area,symbol:{type:'simple-fill',color:[0,0,0,0],outline:{color:'#187a89',width:2,style:'dash'}} as any}))
-    await jmv.view.goTo(area.extent.clone().expand(1.5));setMessage(fs.length+' owner records selected.'+(mode==='adjacent'?' Adjacent is a 2-foot starting selection; add across-street parcels as needed.':' Subject owners are included. Review and adjust before generating.'))
+    await jmv.view.goTo(area.extent.clone().expand(1.5));setMessage(fs.length+' owner records selected.'+(mode==='adjacent'?' Adjacent is a 2-foot starting selection; add across-street parcels as needed.':' Within '+distance+' feet of the case. Subject owners are included. Review and adjust before generating.'))
   })}
   function pick(){cancelPick();if(!jmv||!caseNo)return;const view=jmv.view as __esri.MapView;view.container.style.cursor='crosshair';setMessage('Click parcels to '+action+'. Click Finish adjusting when done.')
     handle.current=view.on('click',event=>{event.stopPropagation();if(busy)return;const p=view.toMap({x:event.x,y:event.y});if(!p)return;void work(async ticket=>{const fs=await within(geometryEngine.buffer(p,view.resolution*3,'meters') as __esri.Polygon);if(ticket!==operation.current)return;fs.forEach(f=>{const id=f.attributes[owners().objectIdField];if(action==='remove')selected.current.delete(id);else selected.current.set(id,f)});await showSelection();setMessage(selected.current.size+' records selected. Continue clicking or finish adjusting.')})})
@@ -226,7 +232,14 @@ export default function Widget(props:AllWidgetProps<any>) {
     {pdf&&<a href={pdf} target="_blank" rel="noreferrer">Open location map PDF</a>}
     <hr/><h3 style={{fontSize:17,color:'#ffffff'}}>3. Select mailing area</h3>
     <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}}>{[['300','300 feet'],['600','600 feet'],['adjacent','Adjacent'],['custom','Custom']].map(([v,label])=><label key={v} style={{padding:8,border:'1px solid '+(mode===v?'#69d1db':'#536170'),borderRadius:4,background:mode===v?'#204b55':'#25313e'}}><input type="radio" name={props.id+'distance'} value={v} checked={mode===v} disabled={busy} onChange={()=>{cancelPick();setMode(v);setResult(null)}}/> {label}</label>)}</div>
-    {button(mode==='custom'?'Start custom selection':'Run selection',()=>void run(),!caseNo||!jmv)}
+    {mode==='custom'&&<div style={{marginTop:10}}>
+      <label htmlFor={props.id+'-radius'}>Custom radius in feet</label>
+      <input id={props.id+'-radius'} type="number" min="0" step="any" inputMode="decimal" value={customRadius} disabled={busy} aria-describedby={props.id+'-radius-help'}
+        onChange={e=>{cancelPick();setCustomRadius(e.target.value);setAppliedMode('');setResult(null)}}
+        style={{display:'block',width:'100%',boxSizing:'border-box',padding:9,marginTop:5,background:'#25313e',color:'#eef4fa',border:'1px solid #647585',borderRadius:4}}/>
+      <p id={props.id+'-radius-help'}>Enter a distance greater than zero, then run selection. Changing the distance requires a new run.</p>
+    </div>}
+    {button('Run selection',()=>void run(),!caseNo||!jmv)}
     <div style={{display:'flex',gap:8,alignItems:'center'}}><label>Adjust: <select aria-label="Selection adjustment" value={action} disabled={busy} onChange={e=>{cancelPick();setAction(e.target.value)}}><option value="add">Add parcels</option><option value="remove">Remove parcels</option></select></label></div>
     {button('Pick parcels on map',pick,!caseNo)}{button('Finish adjusting',()=>{cancelPick();setMessage(count+' records ready for review.')},!caseNo)}
     <strong>{count} owner records selected</strong>

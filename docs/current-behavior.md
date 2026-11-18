@@ -1,13 +1,13 @@
 # Public Notice Web App current behavior
 
-Verified November 12, 2026 against deployed version 9, the installed production bundle, and the three installed runtime source modules. Deployment on the internal City server is established; organizational acceptance and complete legal/recipient-rule validation are separate work.
+Updated November 17, 2026 for deployed version 10, the installed production bundle, and the three installed runtime source modules. Deployment on the internal City server is established; organizational acceptance and complete legal/recipient-rule validation are separate work.
 
 ## Workflow
 
 1. Use the original stock Search widget to find a case, including partial-number searches. Results are polygon records and may repeat a case number. Grouping is not implemented. Search submission or explicit Clear resets old notice work; typing and focus alone do not.
 2. Confirm the gray Subject Area. The workflow queries all case polygons sharing the chosen case number, unions their geometry, and uses that geometry for selection and framing.
 3. Generate CASE_VM.pdf. The browser creates a Letter portrait PDF with a north-up map, City logo, subject/parcels legend, feet scale bar, case number/date, and case-specific QR. The QR is clickable. Test the QR and confirm the destination case before using the PDF.
-4. Choose 300 feet, 600 feet, Adjacent, or Custom. Radius buffers use geodesic ground distance. Radius selections include subject owners; Adjacent is a 2-foot seed excluding parcels whose centroids are contained in the subject geometry. The user can add across-street parcels. Custom retains the current selection for manual add/remove; it is not a custom numeric distance.
+4. Choose 300 feet, 600 feet, Adjacent, or Custom. Radius buffers use geodesic ground distance. Radius selections include subject owners; Adjacent is a 2-foot seed excluding parcels whose centroids are contained in the subject geometry. The user can add across-street parcels. Custom accepts a positive numeric radius in feet, including decimals. Run replaces the previous selection using a geodesic buffer of the full case geometry. Changing the custom value requires a new run. Manual add/remove remains available for all modes.
 5. Adjust parcels or remove table selections, finish adjusting, then generate CASE_ML.csv. The web export contains only the eight cleaned mailing fields, without a ZIP, raw selection, audit/review files, or mailing-list PDF.
 6. Vendor handoff, mailed quantities, PDF package assembly, EnerGov attachment and close-out remain manual.
 
