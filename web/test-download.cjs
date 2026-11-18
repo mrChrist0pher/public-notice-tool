@@ -19,9 +19,10 @@ async function run(records,failPdf=false,stale=false){
   const operation={current:1}
   const fn=new Function('cleanup','csv','fields','cancelPick','selected','appliedMode','mode','owners','work','operation','Blob','URL','document','caseRef','setTimeout','setResult','setMessage','customRadius','esriRequest','makeMailingListPdf','mailingPdfBlob',handlerCode+';return generate();')
   document.baseURI='https://example.test/app/'
-  await fn(mod.exports.cleanup,mod.exports.csv,mod.exports.fields,()=>{},selected,'300','300',()=>({objectIdField:'OID'}),async task=>task(1),operation,Blob,TestURL,document,{current:'TEST-001'},()=>{},r=>result=r,m=>messages.push(m),'',async()=>{if(stale)operation.current=2;return {data:new ArrayBuffer(1)}},async rows=>{pdfRows=rows;if(failPdf)throw Error('Synthetic PDF failure');return new Uint8Array([1])},{current:''})
-  assert.deepEqual(downloads,failPdf||stale?['TEST-001_ML.csv']:['TEST-001_ML.csv','TEST-001_ML.pdf'])
-  assert.equal(blobs.length,failPdf||stale?1:2)
+  await fn(mod.exports.cleanup,mod.exports.csv,mod.exports.fields,()=>{},selected,'300','300',()=>({objectIdField:'OID'}),async task=>task(1),operation,Blob,TestURL,document,{current:'TEST-001'},()=>{},r=>result=r,m=>messages.push(m),'',async()=>{assert.equal(downloads.length,0);if(stale)operation.current=2;return {data:new ArrayBuffer(1)}},async rows=>{assert.equal(downloads.length,0,'Prepare PDF before requesting either download');pdfRows=rows;if(failPdf)throw Error('Synthetic PDF failure');return new Uint8Array([1])},{current:''})
+  assert.deepEqual(downloads,stale?[]:failPdf?['TEST-001_ML.csv']:['TEST-001_ML.csv','TEST-001_ML.pdf'])
+  assert.equal(blobs.length,stale?0:failPdf?1:2)
+  if(stale)return {messages}
   assert.equal(blobs[0].type,'text/csv;charset=utf-8')
   const text=await blobs[0].text()
   assert.equal(text.split('\r\n')[0],'"NAME","NAME2","ADDRESS","ADDRESS2","CITY","STATE","ZIP","COUNTRY"')

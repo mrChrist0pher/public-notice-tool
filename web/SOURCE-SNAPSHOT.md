@@ -1,5 +1,15 @@
 # Source snapshot
 
+## Picking toggle and paired downloads November 18 2026
+
+Production version 13 removes Finish adjusting. Pick parcels on map toggles to Stop picking and exposes aria-pressed. Stopping restores navigation and keeps selected parcels. Generate mailing list prepares the PDF before initiating CSV and PDF downloads together. The browser controls the destination folder and multiple-download permission. Stale cases cancel both; a PDF failure retains CSV-only output with an error.
+
+Bundle SHA-256: 861c0089d175faadc27b552723f057ac4bdd72c63c44711cbc64822cf87d7d28
+
+Eight offline tests and production build passed. Live browser verified Pick parcels on map changes to Stop picking (pressed true), then returns to Pick parcels on map (pressed false) with a stopped message. Existing production configuration and font assets copied unchanged; version 12 retained for rollback. No changes to cleanup rules, geodesic radii, PDF layout, authentication, tracking or mail-send behavior.
+
+
+
 ## Mailing list PDF release
 
 Production version 12 adds CASE_ML.pdf alongside CASE_ML.csv, generated from one cleaned snapshot with the same eight fields and order. Letter landscape (792 by 612 points), embedded Noto Sans fonts, language/title metadata, tagged table/header scopes, repeated visual headings and page numbers. The CSV remains available if PDF creation fails; the UI provides a PDF download fallback. The location-map PDF is unchanged.

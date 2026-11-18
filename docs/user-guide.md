@@ -24,11 +24,11 @@ Choose the required method, then click **Run selection**:
 - **Adjacent:** starts with a small 2-foot buffer. Add across-street parcels as appropriate.
 - **Custom:** enter a radius greater than zero in feet, then click **Run selection**. Decimals are allowed. After changing the distance, run again before exporting.
 
-To adjust the selection, choose **Add parcels** or **Remove parcels**, click **Pick parcels on map**, and click the parcels. Click **Finish adjusting** when done.
+To adjust the selection, choose **Add parcels** or **Remove parcels**, click **Pick parcels on map**, and click the parcels. The same button changes to **Stop picking**; click it to return to normal map navigation. Your selected parcels stay selected. Generating the mailing list also stops picking.
 
 ## 4. Generate the mailing list
 
-Check the selection, then click **Generate mailing list** to download the cleaned CSV and a matching mailing-list PDF as separate files. Allow multiple downloads if your browser asks. If the PDF does not download automatically, use **Download mailing-list PDF** beneath the button. A PDF-generation error will be shown separately; the CSV is still available. Cleanup combines matching owner/address records, keeps distinct owners separate, and excludes records with both mailing address lines blank.
+Check the selection, then click **Generate mailing list** to prepare the cleaned CSV and matching mailing-list PDF, then start both downloads together as separate files. Allow multiple downloads if your browser asks. If the PDF does not download automatically, use **Download mailing-list PDF** beneath the button. A PDF-generation error will be shown separately; the CSV is still available. Cleanup combines matching owner/address records, keeps distinct owners separate, and excludes records with both mailing address lines blank.
 
 ## Save and send
 
@@ -44,5 +44,5 @@ Save the files with the case records and follow the usual EnerGov handoff.
 
 **Starting a new case search clears the previous notice work.**
 
-*P&DS GIS · Owners-only workflow · Updated November 17, 2026*
+*P&DS GIS · Owners-only workflow · Updated November 18, 2026*
 

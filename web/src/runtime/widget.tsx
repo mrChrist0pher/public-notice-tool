@@ -28,6 +28,7 @@ export default function Widget(props:AllWidgetProps<any>) {
   // Custom is a distance in feet. Manual additions/removals are available for
   // every radius and are handled separately by the map-picking controls below.
   const [customRadius,setCustomRadius]=useState('')
+  const [picking,setPicking]=useState(false)
   const mailingPdfBlob=useRef('')
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('Find a case above to begin.'),[count,setCount]=useState(0),[result,setResult]=useState<any>(null),[pdf,setPdf]=useState(''),[appliedMode,setAppliedMode]=useState('')
   const selected=useRef<Map<number,any>>(new Map()),caseRef=useRef(''),operation=useRef(0),handle=useRef<any>(null),highlight=useRef<any>(null),areaLayer=useRef<GraphicsLayer>(null),mounted=useRef(true),searchEditing=useRef(false),pdfBlob=useRef('')
@@ -39,7 +40,7 @@ export default function Widget(props:AllWidgetProps<any>) {
   const owners=()=>layer(cfg.ownerLayerId)
   const cases=()=>layer(cfg.caseLayerId)
   const caseUrl=()=>cfg.caseServiceUrl||caseDs()?.getDataSourceJson?.()?.url||cases()?.url
-  const cancelPick=()=>{handle.current?.remove();handle.current=null;if(jmv)(jmv.view as any).container.style.cursor=''}
+  const cancelPick=()=>{handle.current?.remove();handle.current=null;if(jmv)(jmv.view as any).container.style.cursor='';if(mounted.current)setPicking(false)}
   function clearNotice(){
     // Reset immediately when a new search starts, including pending async work.
     // A late response from the old case must never redraw its buffer or list.
@@ -129,8 +130,12 @@ export default function Widget(props:AllWidgetProps<any>) {
     if(!areaLayer.current){areaLayer.current=new GraphicsLayer({title:'Notification area',listMode:'hide'});jmv.view.map.add(areaLayer.current)}areaLayer.current.removeAll();areaLayer.current.add(new Graphic({geometry:area,symbol:{type:'simple-fill',color:[0,0,0,0],outline:{color:'#187a89',width:2,style:'dash'}} as any}))
     await jmv.view.goTo(area.extent.clone().expand(1.5));setMessage(fs.length+' owner records selected.'+(mode==='adjacent'?' Adjacent is a 2-foot starting selection; add across-street parcels as needed.':' Within '+distance+' feet of the case. Subject owners are included. Review and adjust before generating.'))
   })}
-  function pick(){cancelPick();if(!jmv||!caseNo)return;const view=jmv.view as __esri.MapView;view.container.style.cursor='crosshair';setMessage('Click parcels to '+action+'. Click Finish adjusting when done.')
-    handle.current=view.on('click',event=>{event.stopPropagation();if(busy)return;const p=view.toMap({x:event.x,y:event.y});if(!p)return;void work(async ticket=>{const fs=await within(geometryEngine.buffer(p,view.resolution*3,'meters') as __esri.Polygon);if(ticket!==operation.current)return;fs.forEach(f=>{const id=f.attributes[owners().objectIdField];if(action==='remove')selected.current.delete(id);else selected.current.set(id,f)});await showSelection();setMessage(selected.current.size+' records selected. Continue clicking or finish adjusting.')})})
+  function pick(){
+    // One toggle owns both entry and exit. Stopping removes the click handler
+    // and restores navigation without changing the user's parcel selection.
+    if(handle.current){cancelPick();setMessage(selected.current.size+' records selected. Map picking stopped.');return}
+    cancelPick();if(!jmv||!caseNo)return;const view=jmv.view as __esri.MapView;view.container.style.cursor='crosshair';setPicking(true);setMessage('Click parcels to '+action+'. Click Stop picking to return to map navigation.')
+    handle.current=view.on('click',event=>{event.stopPropagation();if(busy)return;const p=view.toMap({x:event.x,y:event.y});if(!p)return;void work(async ticket=>{const fs=await within(geometryEngine.buffer(p,view.resolution*3,'meters') as __esri.Polygon);if(ticket!==operation.current)return;fs.forEach(f=>{const id=f.attributes[owners().objectIdField];if(action==='remove')selected.current.delete(id);else selected.current.set(id,f)});await showSelection();setMessage(selected.current.size+' records selected. Continue clicking or click Stop picking.')})})
   }
   async function exportMap(){await work(async ticket=>{const geom=await subject();const ex=geom.extent;const width=ex.width*5;const height=width*cfg.frameHeight/cfg.frameWidth
     if(ticket!==operation.current)return
@@ -203,11 +208,15 @@ export default function Widget(props:AllWidgetProps<any>) {
     // If all selected rows are excluded, the CSV contains column headers only.
     const blob=new Blob([csv(cleaned.rows,fields)],{type:'text/csv;charset=utf-8'})
     if(ticket!==operation.current)return
-    const url=URL.createObjectURL(blob)
-    const a=document.createElement('a');a.href=url;a.download=caseRef.current+'_ML.csv';a.click()
-    setTimeout(()=>URL.revokeObjectURL(url),60000)
-    setResult(cleaned)
-    setMessage('CSV generated. Preparing the matching mailing-list PDF…')
+    let csvRequested=false
+    const downloadCsv=()=>{
+      if(csvRequested)return
+      const url=URL.createObjectURL(blob)
+      const a=document.createElement('a');a.href=url;a.download=exportCase+'_ML.csv';a.click()
+      csvRequested=true;setTimeout(()=>URL.revokeObjectURL(url),60000)
+    }
+    setResult(null)
+    setMessage('Preparing the cleaned CSV and matching PDF for download…')
     if(mailingPdfBlob.current){URL.revokeObjectURL(mailingPdfBlob.current);mailingPdfBlob.current=''}
     try{
       // Embedded open-licensed fonts support names/addresses beyond the standard
@@ -217,11 +226,14 @@ export default function Widget(props:AllWidgetProps<any>) {
       if(ticket!==operation.current)return
       const bytes=await makeMailingListPdf(cleaned.rows,{caseNo:exportCase,selection,generatedAt:new Date(),regularFont:new Uint8Array(regular.data),boldFont:new Uint8Array(bold.data)})
       if(ticket!==operation.current)return
+      // Build both files before starting their downloads, then request both in
+      // the same turn. The browser still controls multiple-download permission.
+      downloadCsv()
       mailingPdfBlob.current=URL.createObjectURL(new Blob([bytes as any],{type:'application/pdf'}))
       const p=document.createElement('a');p.href=mailingPdfBlob.current;p.download=exportCase+'_ML.pdf';p.click()
       setResult({...cleaned,pdfUrl:mailingPdfBlob.current})
-      setMessage('Generated '+exportCase+'_ML.csv and '+exportCase+'_ML.pdf - '+cleaned.rows.length+' cleaned mailing destinations. If your browser blocks the second download, use Download mailing-list PDF below.')
-    }catch(e){if(ticket===operation.current)setMessage('CSV generated with '+cleaned.rows.length+' cleaned destinations, but the mailing-list PDF could not be created: '+e.message+'. Generate again to retry the PDF.')}
+      setMessage('CSV and PDF download requested for '+exportCase+' - '+cleaned.rows.length+' cleaned mailing destinations. Allow multiple downloads if your browser asks. If the PDF is blocked, use Download mailing-list PDF below.')
+    }catch(e){if(ticket===operation.current){downloadCsv();setResult(cleaned);setMessage('CSV generated with '+cleaned.rows.length+' cleaned destinations, but the mailing-list PDF could not be created: '+e.message+'. Generate again to retry the PDF.')}}
   })}
   function prepareEmail(){
     try{
@@ -234,7 +246,7 @@ export default function Widget(props:AllWidgetProps<any>) {
       setMessage('Email draft requested in your default email application. Attach '+caseRef.current+'_ML.csv and the required notice/map files; retain '+caseRef.current+'_ML.pdf for records. Fill in the mailing date and billing information, then review and send. Nothing is attached or sent automatically.')
     }catch(e){setMessage('Could not prepare email: '+e.message)}
   }
-  const button=(label:string,fn:()=>void,disabled=false)=><button type="button" disabled={busy||disabled} onClick={fn} style={{padding:'10px 12px',border:'1px solid '+((busy||disabled)?'#46515d':'#399aaa'),borderRadius:4,background:(busy||disabled)?'#303943':'#176b78',color:(busy||disabled)?'#aebbc8':'#ffffff',width:'100%',margin:'5px 0',cursor:'pointer'}}>{label}</button>
+  const button=(label:string,fn:()=>void,disabled=false,pressed?:boolean)=><button type="button" aria-pressed={pressed} disabled={busy||disabled} onClick={fn} style={{padding:'10px 12px',border:'1px solid '+((busy||disabled)?'#46515d':'#399aaa'),borderRadius:4,background:(busy||disabled)?'#303943':'#176b78',color:(busy||disabled)?'#aebbc8':'#ffffff',width:'100%',margin:'5px 0',cursor:'pointer'}}>{label}</button>
   return <div className="jimu-widget pds-notice-dark" style={{colorScheme:'dark',height:'100%',overflowY:'auto',padding:16,fontSize:14,color:'#e8eef4',background:'#18212b'}}>
     <style>{`
       .pds-notice-dark { scrollbar-color: #647585 #18212b; }
@@ -273,7 +285,7 @@ export default function Widget(props:AllWidgetProps<any>) {
     </div>}
     {button('Run selection',()=>void run(),!caseNo||!jmv)}
     <div style={{display:'flex',gap:8,alignItems:'center'}}><label>Adjust: <select aria-label="Selection adjustment" value={action} disabled={busy} onChange={e=>{cancelPick();setAction(e.target.value)}}><option value="add">Add parcels</option><option value="remove">Remove parcels</option></select></label></div>
-    {button('Pick parcels on map',pick,!caseNo)}{button('Finish adjusting',()=>{cancelPick();setMessage(count+' records ready for review.')},!caseNo)}
+    {button(picking?'Stop picking':'Pick parcels on map',pick,!caseNo,picking)}
     <strong>{count} owner records selected</strong>
     <hr/><h3 style={{fontSize:17,color:'#ffffff'}}>4. Mailing list</h3><p>Download the cleaned mailing list as separate CSV and PDF files. Both use the same records. Matching destinations are combined, distinct owners stay separate, and records with both mailing address lines blank are excluded.</p>
     {button('Generate mailing list',()=>void generate(),!count||appliedMode!==mode)}

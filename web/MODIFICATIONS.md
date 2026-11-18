@@ -67,3 +67,9 @@ Added vendor-email.ts and Prepare vendor email after a non-empty cleaned list is
 ## November 17 mailing PDF follow-up
 
 Added mailing-list-pdf.ts using pinned PDFKit 0.17.2 standalone, embedded open-licensed Noto Sans fonts and manually constructed tagged table structure. Generate uses one cleaned snapshot for both CSV and PDF, without ZIP/raw/review files. New PDF download link supports browsers that block the second automatic download. CSV is kept if PDF generation fails; stale PDF results are suppressed. No cleanup rules, location-map layout, QR, authentication, scale or notification selection logic changed. Source font/license files are checked in; vendor runtime is installed from npm.
+
+## November 18 selection and paired download follow-up
+
+Removed Finish adjusting. Pick parcels on map now toggles to Stop picking with aria-pressed state. Stopping, changing selection controls, generating a list, running a selection or starting another case removes the pick handler and restores the cursor. Stopping alone does not change selected records.
+
+Generate mailing list now builds both outputs before requesting CSV and PDF downloads together. A stale case cancels both downloads; a PDF-generation error still permits CSV-only output with an explicit message. Browsers retain control of destination folder and multiple-download permission. No new tracking, mail-send or accessibility-conformance claim.
