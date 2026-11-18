@@ -25,7 +25,7 @@ Changing method requires Run again before mailing export. An empty selection can
 | icon.svg | Original envelope icon supplied during repository packaging |
 | test-cleanup.cjs | Synthetic cleanup regression checks |
 | test-pdf.cjs | Synthetic PDF page size and clickable case-link check |
-| test-download.cjs | Actual handler check: one cleaned CSV, eight fields, no raw/ZIP |
+| test-download.cjs | Actual handler check: matching CSV/PDF from the same cleaned rows, eight fields, no raw/ZIP, stale/error handling |
 
 The web app necessarily uses TypeScript/React and Experience Builder JSON metadata. The `pro/` implementation and its local settings remain Python.
 
@@ -43,4 +43,4 @@ Historical live checks before packaging included 300/600-foot parity with Pro an
 
 ## November 9 cleanup/download update
 
-Every cleanup rule has its own plain-English source comment. See [the team explanation](../docs/cleanup-team-guide.md). The finished web download is now CSV only. The app does not archive the selected source records; cleanup audit objects are temporary working data. Existing downloaded files are not changed.
+Every cleanup rule has its own plain-English source comment. See [the team explanation](../docs/cleanup-team-guide.md). The finished web download is a cleaned CSV and matching tagged mailing-list PDF as separate files. The app does not archive the selected source records; cleanup audit objects are temporary working data. Existing downloaded files are not changed.
