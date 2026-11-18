@@ -1,5 +1,13 @@
 # Source snapshot
 
+## Generate only mailing downloads November 18 2026
+
+Production version 14 removes the separate mailing PDF link. Generate mailing list still creates both files and requests both downloads together. Browser settings control the download folder and multiple-download permission. pdfReady records successful generation, not confirmed file saving. No other output, selection, email or tracking changes. Download-handler tests and production build passed. Version 13 retained for rollback.
+
+Bundle SHA-256: 24aeffe9101468942d9110bc2c4c545a6d65909ba9a56993eb0ebac1e5ed0223
+
+
+
 ## Picking toggle and paired downloads November 18 2026
 
 Production version 13 removes Finish adjusting. Pick parcels on map toggles to Stop picking and exposes aria-pressed. Stopping restores navigation and keeps selected parcels. Generate mailing list prepares the PDF before initiating CSV and PDF downloads together. The browser controls the destination folder and multiple-download permission. Stale cases cancel both; a PDF failure retains CSV-only output with an error.

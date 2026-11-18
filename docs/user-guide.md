@@ -28,7 +28,7 @@ To adjust the selection, choose **Add parcels** or **Remove parcels**, click **P
 
 ## 4. Generate the mailing list
 
-Check the selection, then click **Generate mailing list** to prepare the cleaned CSV and matching mailing-list PDF, then start both downloads together as separate files. Allow multiple downloads if your browser asks. If the PDF does not download automatically, use **Download mailing-list PDF** beneath the button. A PDF-generation error will be shown separately; the CSV is still available. Cleanup combines matching owner/address records, keeps distinct owners separate, and excludes records with both mailing address lines blank.
+Check the selection, then click **Generate mailing list** to prepare the cleaned CSV and matching mailing-list PDF, then start both downloads together as separate files. Allow multiple downloads if your browser asks. If only one file saves, allow multiple downloads for this site in the browser, then click **Generate mailing list** again. There is no separate PDF download link. A PDF-generation error will be shown separately; the CSV is still available. Cleanup combines matching owner/address records, keeps distinct owners separate, and excludes records with both mailing address lines blank.
 
 ## Save and send
 

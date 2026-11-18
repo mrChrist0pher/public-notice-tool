@@ -73,3 +73,7 @@ Added mailing-list-pdf.ts using pinned PDFKit 0.17.2 standalone, embedded open-l
 Removed Finish adjusting. Pick parcels on map now toggles to Stop picking with aria-pressed state. Stopping, changing selection controls, generating a list, running a selection or starting another case removes the pick handler and restores the cursor. Stopping alone does not change selected records.
 
 Generate mailing list now builds both outputs before requesting CSV and PDF downloads together. A stale case cancels both downloads; a PDF-generation error still permits CSV-only output with an explicit message. Browsers retain control of destination folder and multiple-download permission. No new tracking, mail-send or accessibility-conformance claim.
+
+## November 18 Generate only mailing downloads
+
+Version 14 removes the separate mailing PDF link at Chris's request. Generate mailing list still prepares both files and initiates both downloads. The status message directs users to allow multiple downloads; the browser controls download destination and permissions. pdfReady is a generation flag, not proof the file was saved. PDF failure still permits CSV-only output with an explicit error.

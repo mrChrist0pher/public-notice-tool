@@ -27,7 +27,7 @@ async function run(records,failPdf=false,stale=false){
   const text=await blobs[0].text()
   assert.equal(text.split('\r\n')[0],'"NAME","NAME2","ADDRESS","ADDRESS2","CITY","STATE","ZIP","COUNTRY"')
   assert(!text.includes('SOURCE_OID'))
-  if(!failPdf&&!stale){assert.strictEqual(pdfRows,result.rows);assert(result.pdfUrl)}
+  if(!failPdf&&!stale){assert.strictEqual(pdfRows,result.rows);assert(result.pdfReady)}
   return {text,result,messages}
 }
 ;(async()=>{
@@ -41,5 +41,6 @@ async function run(records,failPdf=false,stale=false){
   const failed=await run([base],true)
   assert(failed.messages.some(m=>m.includes('CSV generated')&&m.includes('could not be created')))
   await run([base],false,true)
+  assert(!source.includes('Download mailing-list PDF'),'Mailing outputs should use the Generate button only')
   console.log('PASS: actual handler exports CSV and PDF from identical cleaned rows, excludes blank addresses, supports empty output, preserves CSV on PDF failure and blocks stale PDF downloads.')
 })().catch(e=>{console.error(e);process.exitCode=1})

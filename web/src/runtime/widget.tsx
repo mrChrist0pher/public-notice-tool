@@ -231,8 +231,8 @@ export default function Widget(props:AllWidgetProps<any>) {
       downloadCsv()
       mailingPdfBlob.current=URL.createObjectURL(new Blob([bytes as any],{type:'application/pdf'}))
       const p=document.createElement('a');p.href=mailingPdfBlob.current;p.download=exportCase+'_ML.pdf';p.click()
-      setResult({...cleaned,pdfUrl:mailingPdfBlob.current})
-      setMessage('CSV and PDF download requested for '+exportCase+' - '+cleaned.rows.length+' cleaned mailing destinations. Allow multiple downloads if your browser asks. If the PDF is blocked, use Download mailing-list PDF below.')
+      setResult({...cleaned,pdfReady:true})
+      setMessage('CSV and PDF download requested for '+exportCase+' - '+cleaned.rows.length+' cleaned mailing destinations. Allow multiple downloads if your browser asks. Both files use your browser\'s download folder.')
     }catch(e){if(ticket===operation.current){downloadCsv();setResult(cleaned);setMessage('CSV generated with '+cleaned.rows.length+' cleaned destinations, but the mailing-list PDF could not be created: '+e.message+'. Generate again to retry the PDF.')}}
   })}
   function prepareEmail(){
@@ -289,8 +289,7 @@ export default function Widget(props:AllWidgetProps<any>) {
     <strong>{count} owner records selected</strong>
     <hr/><h3 style={{fontSize:17,color:'#ffffff'}}>4. Mailing list</h3><p>Download the cleaned mailing list as separate CSV and PDF files. Both use the same records. Matching destinations are combined, distinct owners stay separate, and records with both mailing address lines blank are excluded.</p>
     {button('Generate mailing list',()=>void generate(),!count||appliedMode!==mode)}
-    {result&&<p>{result.rows.length} mailing destinations - CSV ready{result.pdfUrl?' and PDF ready':''}</p>}
-    {result?.pdfUrl&&<p><a href={result.pdfUrl} download={caseNo+'_ML.pdf'}>Download mailing-list PDF</a></p>}
+    {result&&<p>{result.rows.length} mailing destinations - CSV ready{result.pdfReady?' and PDF ready':''}</p>}
     {button('Prepare vendor email',prepareEmail,!result?.rows?.length||appliedMode!==mode)}
     <p>Opens a draft in your default email app. Attach the downloaded mailing list and required notice/map files before sending.{!cfg.mailingVendorEmail&&' Enter the vendor in the To field.'}</p>
     <div role="status" aria-live="polite" style={{marginTop:12,padding:10,background:'#253442',borderRadius:4}}>{message}</div>
