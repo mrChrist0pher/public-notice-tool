@@ -1,5 +1,17 @@
 # Source snapshot
 
+## Mailing list PDF release
+
+Production version 12 adds CASE_ML.pdf alongside CASE_ML.csv, generated from one cleaned snapshot with the same eight fields and order. Letter landscape (792 by 612 points), embedded Noto Sans fonts, language/title metadata, tagged table/header scopes, repeated visual headings and page numbers. The CSV remains available if PDF creation fails; the UI provides a PDF download fallback. The location-map PDF is unchanged.
+
+Bundle SHA-256: 996e5d58362439a9c04a4bcf74b7ddc4ee5784c7e6275bc44b7e37035c9ead35
+
+Version 11 retained for rollback. Configurations, authentication, 2400 minimum scale and 1200 scale steps preserved. Seven offline tests passed, including exact field/order parity, long-row continuation, blank and unsupported-font cases, stale results and CSV survival after PDF failure. Synthetic PDFs were rendered and inspected. Live LUR1960-00005 test: 26 owner records selected at 300 feet; 20 cleaned destinations; both files generated successfully according to app status. The browser download-event helper stalled; automatic saving of the PDF to Windows Downloads was not established by that helper. CSV reached Downloads; the PDF manual link is present when generated.
+
+PAC and manual screen-reader acceptance remain open. Tags are not a conformance certification. The Noto Sans font has limited script coverage; unsupported characters produce an error rather than silent replacement. No notification tracking writer or automatic email attachment/send is included.
+
+
+
 ## Prepare vendor email release November 17 2026
 
 Deployed bundle SHA-256: 88c73dc48c4ea628c2ae8cb560ce298b296d056a8f554dd214e66295af6e756b

@@ -63,3 +63,7 @@ Esri supplies Experience Builder, React/Jimu framework, Maps SDK and stock widge
 ## November 17 vendor email follow-up
 
 Added vendor-email.ts and Prepare vendor email after a non-empty cleaned list is generated. A mailto draft includes the case, cleaned destination count and selection method. It uses the default email application, not an Outlook-specific API. Optional mailingVendorEmail is supplied in local deployment configuration; no recipient is assumed. Attachments, requested mailing date, billing information and Send remain manual. Existing result invalidation prevents preparing an email from an outdated selection. No background tracking or automatic mail delivery is included.
+
+## November 17 mailing PDF follow-up
+
+Added mailing-list-pdf.ts using pinned PDFKit 0.17.2 standalone, embedded open-licensed Noto Sans fonts and manually constructed tagged table structure. Generate uses one cleaned snapshot for both CSV and PDF, without ZIP/raw/review files. New PDF download link supports browsers that block the second automatic download. CSV is kept if PDF generation fails; stale PDF results are suppressed. No cleanup rules, location-map layout, QR, authentication, scale or notification selection logic changed. Source font/license files are checked in; vendor runtime is installed from npm.

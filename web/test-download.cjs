@@ -9,20 +9,24 @@ const source=fs.readFileSync(path.join(__dirname,'src/runtime/widget.tsx'),'utf8
 const start=source.indexOf('  async function generate(){'),end=source.indexOf('  const button=',start)
 assert(start>=0&&end>start)
 const handler=source.slice(start,end)
+const handlerCode=ts.transpileModule(handler,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2019}}).outputText
 const base={SOURCE_OID:1,OwnerName:'TEST OWNER',MailAddr1:'10 MAIN ST',MailAddr2:'',MailCity:'BOULDER',MailState:'CO',MailZip:'80301',MailCountry:''}
-async function run(records){
-  let downloads=[],blobs=[],messages=[],result
+async function run(records,failPdf=false,stale=false){
+  let downloads=[],blobs=[],messages=[],result,pdfRows
   const document={createElement:()=>{const a={click:()=>downloads.push(a.download)};return a}}
-  const URL={createObjectURL:blob=>{blobs.push(blob);return 'blob:test'},revokeObjectURL:()=>{}}
+  const TestURL=class extends URL {static createObjectURL(blob){blobs.push(blob);return 'blob:test'}static revokeObjectURL(){}}
   const selected={current:new Map(records.map((r,i)=>[i,{attributes:{...r,OID:i}}]))}
-  const fn=new Function('cleanup','csv','fields','cancelPick','selected','appliedMode','mode','owners','work','operation','Blob','URL','document','caseRef','setTimeout','setResult','setMessage',handler+';return generate();')
-  await fn(mod.exports.cleanup,mod.exports.csv,mod.exports.fields,()=>{},selected,'300','300',()=>({objectIdField:'OID'}),async task=>task(1),{current:1},Blob,URL,document,{current:'TEST-001'},()=>{},r=>result=r,m=>messages.push(m))
-  assert.deepEqual(downloads,['TEST-001_ML.csv'])
-  assert.equal(blobs.length,1)
+  const operation={current:1}
+  const fn=new Function('cleanup','csv','fields','cancelPick','selected','appliedMode','mode','owners','work','operation','Blob','URL','document','caseRef','setTimeout','setResult','setMessage','customRadius','esriRequest','makeMailingListPdf','mailingPdfBlob',handlerCode+';return generate();')
+  document.baseURI='https://example.test/app/'
+  await fn(mod.exports.cleanup,mod.exports.csv,mod.exports.fields,()=>{},selected,'300','300',()=>({objectIdField:'OID'}),async task=>task(1),operation,Blob,TestURL,document,{current:'TEST-001'},()=>{},r=>result=r,m=>messages.push(m),'',async()=>{if(stale)operation.current=2;return {data:new ArrayBuffer(1)}},async rows=>{pdfRows=rows;if(failPdf)throw Error('Synthetic PDF failure');return new Uint8Array([1])},{current:''})
+  assert.deepEqual(downloads,failPdf||stale?['TEST-001_ML.csv']:['TEST-001_ML.csv','TEST-001_ML.pdf'])
+  assert.equal(blobs.length,failPdf||stale?1:2)
   assert.equal(blobs[0].type,'text/csv;charset=utf-8')
   const text=await blobs[0].text()
   assert.equal(text.split('\r\n')[0],'"NAME","NAME2","ADDRESS","ADDRESS2","CITY","STATE","ZIP","COUNTRY"')
   assert(!text.includes('SOURCE_OID'))
+  if(!failPdf&&!stale){assert.strictEqual(pdfRows,result.rows);assert(result.pdfUrl)}
   return {text,result,messages}
 }
 ;(async()=>{
@@ -33,5 +37,8 @@ async function run(records){
   const empty=await run([blank])
   assert.equal(empty.text.split('\r\n').length,1)
   assert.equal(empty.result.rows.length,0)
-  console.log('PASS: actual handler downloads one cleaned CSV, excludes blank addresses, has eight fields and no raw IDs/ZIP archive, supports header-only output.')
+  const failed=await run([base],true)
+  assert(failed.messages.some(m=>m.includes('CSV generated')&&m.includes('could not be created')))
+  await run([base],false,true)
+  console.log('PASS: actual handler exports CSV and PDF from identical cleaned rows, excludes blank addresses, supports empty output, preserves CSV on PDF failure and blocks stale PDF downloads.')
 })().catch(e=>{console.error(e);process.exitCode=1})

@@ -19,9 +19,9 @@ Source-code review finds that current location PDFs have text/title metadata and
 
 ## PDF mailing list alongside the CSV
 
-Status: Requested for backlog only, not implemented. Added November 12, 2026. Do not change the export handler until implementation is separately authorized.
+Status: CSV-plus-PDF export implemented in version 12 on November 17, 2026, following explicit implementation authorization. Accessibility acceptance is still open.
 
-Need: Produce a printable record of exactly the cleaned mailing destinations exported by the web app, supporting the existing ML PDF and PN3 records workflow.
+Need: Produce a printable record of exactly the cleaned mailing destinations exported by the web app for EnerGov and case records. PN3 assembly is no longer required.
 
 - Download CASE_ML.pdf and CASE_ML.csv as separate files to Downloads. No ZIP.
 - Use the same cleaned snapshot, rows, ordering, and all eight CSV fields: NAME, NAME2, ADDRESS, ADDRESS2, CITY, STATE, ZIP, COUNTRY.
@@ -30,7 +30,7 @@ Need: Produce a printable record of exactly the cleaned mailing destinations exp
 - Do not restore raw-selection or review-flag downloads. No Excel export is implied.
 - Handle an all-excluded selection explicitly and consistently with the CSV; confirm preferred PDF wording for zero destinations.
 - Test PDF/CSV row parity and browser behavior for two separate downloads. An export does not prove mail was sent.
-- Existing process: PN2 combines the notice letter and vicinity map; PN3 adds the ML PDF for EnerGov. Automated assembly and vendor/EnerGov delivery remain out of scope.
+- PN2 historically combines the notice letter and vicinity map. PN3 assembly has been removed from the current workflow. Version 12 supplies a separate ML PDF; package assembly and EnerGov delivery are not automated.
 
 ## Other product follow-up
 
@@ -128,3 +128,10 @@ A planner with Viewer permissions can generate outputs and receive confirmation 
 - [x] Version 11 adds Prepare vendor email after a non-empty cleaned list is generated. Case, count and selection method are prefilled through mailto. Default email handler opens the draft. To stays blank unless mailingVendorEmail is configured locally.
 - [ ] Confirm the vendor recipient.
 - [ ] If automatic attachments are required, assess a City-approved Graph or Power Automate integration separately. Manual attachments and Send are required in version 11. This does not implement background tracking.
+
+## Mailing PDF acceptance still open after version 12
+
+- [x] Separate matching CSV/PDF downloads, tags, language/title, embedded fonts, header scopes, long-row pagination and manual PDF retry link.
+- [x] Synthetic field/order parity, empty output, font error handling, stale-result checks and visual render review.
+- [ ] PAC validation and manual screen-reader review. Do not claim conformance from structural tests alone.
+- [ ] Extend script/font coverage if international records require characters outside the bundled Noto Sans font. Unsupported text must not be silently dropped.

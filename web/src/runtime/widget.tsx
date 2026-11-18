@@ -19,6 +19,7 @@ import esriRequest from 'esri/request'
 import { makeNoticePdf } from './pdf-layout'
 import { cleanup, csv, fields } from './cleanup'
 import { vendorEmailUrl } from './vendor-email'
+import { makeMailingListPdf } from './mailing-list-pdf'
 
 
 const {useState,useRef,useEffect}=React
@@ -27,6 +28,7 @@ export default function Widget(props:AllWidgetProps<any>) {
   // Custom is a distance in feet. Manual additions/removals are available for
   // every radius and are handled separately by the map-picking controls below.
   const [customRadius,setCustomRadius]=useState('')
+  const mailingPdfBlob=useRef('')
   const [busy,setBusy]=useState(false),[message,setMessage]=useState('Find a case above to begin.'),[count,setCount]=useState(0),[result,setResult]=useState<any>(null),[pdf,setPdf]=useState(''),[appliedMode,setAppliedMode]=useState('')
   const selected=useRef<Map<number,any>>(new Map()),caseRef=useRef(''),operation=useRef(0),handle=useRef<any>(null),highlight=useRef<any>(null),areaLayer=useRef<GraphicsLayer>(null),mounted=useRef(true),searchEditing=useRef(false),pdfBlob=useRef('')
   const cfg=props.config
@@ -44,6 +46,7 @@ export default function Widget(props:AllWidgetProps<any>) {
     operation.current++;cancelPick();selected.current.clear();highlight.current?.remove();areaLayer.current?.removeAll();ownerDs()?.clearSelection()
     setCount(0);setAppliedMode('');setResult(null);setPdf('');setBusy(false)
     if(pdfBlob.current){URL.revokeObjectURL(pdfBlob.current);pdfBlob.current=''}
+    if(mailingPdfBlob.current){URL.revokeObjectURL(mailingPdfBlob.current);mailingPdfBlob.current=''}
   }
   useEffect(()=>{if(!jmv)return
     const start=(event:Event)=>{const el=event.target as HTMLElement
@@ -70,7 +73,7 @@ export default function Widget(props:AllWidgetProps<any>) {
     const fixed=new FeatureLayer({url:caseUrl(),id:old.id,title:'Subject Area',definitionExpression:'1=0',renderer:old.renderer,popupTemplate:old.popupTemplate})
     const index=jmv.view.map.layers.indexOf(old);jmv.view.map.remove(old);jmv.view.map.add(fixed,index)
   }},[jmv])
-  useEffect(()=>()=>{mounted.current=false;operation.current++;cancelPick();highlight.current?.remove();if(areaLayer.current)jmv?.view.map.remove(areaLayer.current)},[])
+  useEffect(()=>()=>{mounted.current=false;operation.current++;cancelPick();highlight.current?.remove();if(areaLayer.current)jmv?.view.map.remove(areaLayer.current);if(mailingPdfBlob.current)URL.revokeObjectURL(mailingPdfBlob.current);if(pdfBlob.current)URL.revokeObjectURL(pdfBlob.current)},[])
   // Search keeps its existing configuration. Observe its selected record or exact
   // CASENUMBER filter, then query ALL polygons for that case (not just one result).
   useEffect(()=>{if(!jmv)return;const timer=setInterval(()=>{
@@ -184,8 +187,9 @@ export default function Widget(props:AllWidgetProps<any>) {
       setMessage('Location map downloaded with a QR code linking to '+caseRef.current+' in the Property Information map. Scan it to confirm the correct case opens.')
     }finally{if(printView)printView.destroy();else map.destroy();div.remove()}
   })}
-  // MAILING DOWNLOAD: Clean the user's final selection and download one CSV.
-  // No raw selection, audit file, or ZIP is saved by the web download button.
+  // MAILING DOWNLOAD: One cleaned snapshot feeds both the CSV and tagged PDF.
+  // No raw selection, audit file, or ZIP is saved. CSV remains available if PDF
+  // creation fails; no stale PDF may download after the case/selection changes.
   async function generate(){await work(async ticket=>{
     cancelPick()
     if(!selected.current.size)throw Error('Select recipients first. An empty selection never exports all parcels.')
@@ -193,6 +197,8 @@ export default function Widget(props:AllWidgetProps<any>) {
     // Cleanup uses a temporary in-memory copy; county source records are not edited.
     const captured=Array.from(selected.current.values()).map(f=>({...f.attributes,SOURCE_OID:f.attributes[owners().objectIdField]}))
     const cleaned=cleanup(captured)
+    const exportCase=caseRef.current
+    const selection=mode==='custom'?customRadius+' feet (custom), with any manual adjustments':mode==='adjacent'?'Adjacent, with any manual adjustments':mode+' feet, with any manual adjustments'
     // Export only the eight mailing fields. Excluded rows never enter cleaned.rows.
     // If all selected rows are excluded, the CSV contains column headers only.
     const blob=new Blob([csv(cleaned.rows,fields)],{type:'text/csv;charset=utf-8'})
@@ -201,7 +207,21 @@ export default function Widget(props:AllWidgetProps<any>) {
     const a=document.createElement('a');a.href=url;a.download=caseRef.current+'_ML.csv';a.click()
     setTimeout(()=>URL.revokeObjectURL(url),60000)
     setResult(cleaned)
-    setMessage('Downloaded '+caseRef.current+'_ML.csv - '+cleaned.rows.length+' cleaned mailing destinations.')
+    setMessage('CSV generated. Preparing the matching mailing-list PDF…')
+    if(mailingPdfBlob.current){URL.revokeObjectURL(mailingPdfBlob.current);mailingPdfBlob.current=''}
+    try{
+      // Embedded open-licensed fonts support names/addresses beyond the standard
+      // PDF fonts. Load locally hosted assets; no recipient data leaves the app.
+      const asset=(name:string)=>esriRequest(new URL('widgets/pds-public-notice/dist/runtime/assets/'+name,document.baseURI).href,{responseType:'array-buffer',timeout:30000})
+      const [regular,bold]=await Promise.all([asset('NotoSans-Regular.ttf'),asset('NotoSans-Bold.ttf')])
+      if(ticket!==operation.current)return
+      const bytes=await makeMailingListPdf(cleaned.rows,{caseNo:exportCase,selection,generatedAt:new Date(),regularFont:new Uint8Array(regular.data),boldFont:new Uint8Array(bold.data)})
+      if(ticket!==operation.current)return
+      mailingPdfBlob.current=URL.createObjectURL(new Blob([bytes as any],{type:'application/pdf'}))
+      const p=document.createElement('a');p.href=mailingPdfBlob.current;p.download=exportCase+'_ML.pdf';p.click()
+      setResult({...cleaned,pdfUrl:mailingPdfBlob.current})
+      setMessage('Generated '+exportCase+'_ML.csv and '+exportCase+'_ML.pdf - '+cleaned.rows.length+' cleaned mailing destinations. If your browser blocks the second download, use Download mailing-list PDF below.')
+    }catch(e){if(ticket===operation.current)setMessage('CSV generated with '+cleaned.rows.length+' cleaned destinations, but the mailing-list PDF could not be created: '+e.message+'. Generate again to retry the PDF.')}
   })}
   function prepareEmail(){
     try{
@@ -211,7 +231,7 @@ export default function Widget(props:AllWidgetProps<any>) {
       const method=mode==='custom'?customRadius+' feet (custom)':mode==='adjacent'?'Adjacent, with any manual adjustments':mode+' feet, with any manual adjustments'
       const a=document.createElement('a')
       a.href=vendorEmailUrl(caseRef.current,result.rows.length,method,cfg.mailingVendorEmail||'');a.click()
-      setMessage('Email draft requested in your default email application. Attach '+caseRef.current+'_ML.csv and the required notice/map files, fill in the mailing date and billing information, then review and send. Nothing is attached or sent automatically.')
+      setMessage('Email draft requested in your default email application. Attach '+caseRef.current+'_ML.csv and the required notice/map files; retain '+caseRef.current+'_ML.pdf for records. Fill in the mailing date and billing information, then review and send. Nothing is attached or sent automatically.')
     }catch(e){setMessage('Could not prepare email: '+e.message)}
   }
   const button=(label:string,fn:()=>void,disabled=false)=><button type="button" disabled={busy||disabled} onClick={fn} style={{padding:'10px 12px',border:'1px solid '+((busy||disabled)?'#46515d':'#399aaa'),borderRadius:4,background:(busy||disabled)?'#303943':'#176b78',color:(busy||disabled)?'#aebbc8':'#ffffff',width:'100%',margin:'5px 0',cursor:'pointer'}}>{label}</button>
@@ -255,9 +275,10 @@ export default function Widget(props:AllWidgetProps<any>) {
     <div style={{display:'flex',gap:8,alignItems:'center'}}><label>Adjust: <select aria-label="Selection adjustment" value={action} disabled={busy} onChange={e=>{cancelPick();setAction(e.target.value)}}><option value="add">Add parcels</option><option value="remove">Remove parcels</option></select></label></div>
     {button('Pick parcels on map',pick,!caseNo)}{button('Finish adjusting',()=>{cancelPick();setMessage(count+' records ready for review.')},!caseNo)}
     <strong>{count} owner records selected</strong>
-    <hr/><h3 style={{fontSize:17,color:'#ffffff'}}>4. Mailing list</h3><p>Download the cleaned mailing list as a CSV. Matching destinations are combined, distinct owners stay separate, and records with both mailing address lines blank are excluded.</p>
+    <hr/><h3 style={{fontSize:17,color:'#ffffff'}}>4. Mailing list</h3><p>Download the cleaned mailing list as separate CSV and PDF files. Both use the same records. Matching destinations are combined, distinct owners stay separate, and records with both mailing address lines blank are excluded.</p>
     {button('Generate mailing list',()=>void generate(),!count||appliedMode!==mode)}
-    {result&&<p>{result.rows.length} mailing destinations - CSV ready to use</p>}
+    {result&&<p>{result.rows.length} mailing destinations - CSV ready{result.pdfUrl?' and PDF ready':''}</p>}
+    {result?.pdfUrl&&<p><a href={result.pdfUrl} download={caseNo+'_ML.pdf'}>Download mailing-list PDF</a></p>}
     {button('Prepare vendor email',prepareEmail,!result?.rows?.length||appliedMode!==mode)}
     <p>Opens a draft in your default email app. Attach the downloaded mailing list and required notice/map files before sending.{!cfg.mailingVendorEmail&&' Enter the vendor in the To field.'}</p>
     <div role="status" aria-live="polite" style={{marginTop:12,padding:10,background:'#253442',borderRadius:4}}>{message}</div>

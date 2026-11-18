@@ -1,6 +1,6 @@
 # Public Notice Web App current behavior
 
-Updated November 17, 2026 for deployed version 11, the installed production bundle, and the three installed runtime source modules. Deployment on the internal City server is established; organizational acceptance and complete legal/recipient-rule validation are separate work.
+Updated November 17, 2026 for deployed version 12, the installed production bundle, and the three installed runtime source modules. Deployment on the internal City server is established; organizational acceptance and complete legal/recipient-rule validation are separate work.
 
 ## Workflow
 
@@ -8,7 +8,7 @@ Updated November 17, 2026 for deployed version 11, the installed production bund
 2. Confirm the gray Subject Area. The workflow queries all case polygons sharing the chosen case number, unions their geometry, and uses that geometry for selection and framing.
 3. Generate CASE_VM.pdf. The browser creates a Letter portrait PDF with a north-up map, City logo, subject/parcels legend, feet scale bar, case number/date, and case-specific QR. The QR is clickable. Test the QR and confirm the destination case before using the PDF.
 4. Choose 300 feet, 600 feet, Adjacent, or Custom. Radius buffers use geodesic ground distance. Radius selections include subject owners; Adjacent is a 2-foot seed excluding parcels whose centroids are contained in the subject geometry. The user can add across-street parcels. Custom accepts a positive numeric radius in feet, including decimals. Run replaces the previous selection using a geodesic buffer of the full case geometry. Changing the custom value requires a new run. Manual add/remove remains available for all modes.
-5. Adjust parcels or remove table selections, finish adjusting, then generate CASE_ML.csv. The web export contains only the eight cleaned mailing fields, without a ZIP, raw selection, audit/review files, or mailing-list PDF.
+5. Adjust parcels or remove table selections, finish adjusting, then generate CASE_ML.csv and CASE_ML.pdf as separate downloads. Both use the same cleaned snapshot and eight mailing fields in the same order. No ZIP or raw/audit/review downloads. A PDF link remains available if the browser blocks the second automatic download. PDF failure leaves the CSV available and shows an error; it does not claim both files succeeded.
 6. After generating a non-empty cleaned list, Prepare vendor email requests a draft through the default email app using a mailto link. It preloads case, cleaned destination count and selection method. Attachments, mailing date, billing details, review and Send remain manual. No automatic attachment, Microsoft Graph integration or background tracking is implemented. An optional local mailingVendorEmail setting supplies a single vendor address; otherwise To is blank.
 7. Mailed quantities, PDF package assembly, EnerGov attachment and close-out remain manual.
 
@@ -38,3 +38,9 @@ PDF accessibility is not certified. The current generator draws a map image and 
 - GIS Work: project purpose, stakeholders, business decisions and open questions; link to the repository for technical behavior.
 - Historical snapshots remain historical. They do not override this verified behavior record.
 - App settings, internal service inventory, credentials and real mailing data stay outside this source package.
+
+## Mailing list PDF version 12
+
+PDFKit 0.17.2 standalone creates a Letter landscape table with an embedded Noto Sans font, case number, Denver generation date/time, selection method, count, repeated headings and page numbers. Logical structure is Document, H1, P, Table, TR, TH and TD. Column headers have Scope Column; repeated visual headers, borders and footers are artifacts. All eight original cleaned field values are retained as cell ActualText, including blanks and leading-zero postal codes. Long cells wrap and can continue across pages. Names unsupported by this font cause an explicit PDF error; the CSV still preserves their values.
+
+Structural tests and visual pagination checks passed. PAC and manual screen-reader review remain open; this release is not certified PDF/UA. The location map PDF is unchanged and still has its separate accessibility gaps. No assembled notice package, background tracking, automatic email attachment or mail sending is added.

@@ -14,7 +14,7 @@
 2. In `<EXB>/client`, add the packages used by custom code:
 
 ```console
-npm install --save-exact pdf-lib@1.17.1 qrcode@1.5.4
+npm install --save-exact pdf-lib@1.17.1 qrcode@1.5.4 pdfkit@0.17.2
 npm install --save-dev --save-exact @types/qrcode@1.5.5
 npm run build:dev
 ```
@@ -74,3 +74,9 @@ Production hosting, deployment base paths, authorization/CORS and widget registr
 ## Optional vendor email configuration
 
 Set `mailingVendorEmail` in the workflow widget configuration to a confirmed single vendor email address. Blank or absent leaves To blank. The button uses mailto and the default email handler, not Microsoft Graph. It never attaches files or sends mail. Add recipients locally; no historical vendor address is assumed. Run `node test-vendor-email.cjs` and `node test-radius.cjs` alongside the existing checks.
+
+## Mailing list PDF assets and tests
+
+Deploy mailing-list-pdf.ts, pdfkit-browser.d.ts, NotoSans-Regular.ttf, NotoSans-Bold.ttf, NotoSans-LICENSE.txt and PDFKit-LICENSE.txt with the widget. Font files must remain at dist/runtime/assets and be served by IIS as static files. PDFKit standalone provides its browser runtime; do not replace it with its Node entry point. Font requests use the deployed document base path and a 30-second timeout.
+
+Run `node test-mailing-pdf.cjs` with EXB_CLIENT pointing to the client that has pdfkit installed. It checks tagged structure, header scopes and exact field/order parity, long rows, empty output and unsupported glyph behavior. Set NOTICE_PDF_OUTPUT to a local temporary directory to render the synthetic fixtures; do not commit real mailing outputs. `test-download.cjs` checks both download names, shared cleaned rows, stale work and PDF-failure recovery. PAC and manual screen-reader checks remain required acceptance work.

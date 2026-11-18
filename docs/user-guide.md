@@ -28,14 +28,15 @@ To adjust the selection, choose **Add parcels** or **Remove parcels**, click **P
 
 ## 4. Generate the mailing list
 
-Check the selection, then click **Generate mailing list** to download the cleaned CSV. Cleanup combines matching owner/address records, keeps distinct owners separate, and excludes records with both mailing address lines blank.
+Check the selection, then click **Generate mailing list** to download the cleaned CSV and a matching mailing-list PDF as separate files. Allow multiple downloads if your browser asks. If the PDF does not download automatically, use **Download mailing-list PDF** beneath the button. A PDF-generation error will be shown separately; the CSV is still available. Cleanup combines matching owner/address records, keeps distinct owners separate, and excludes records with both mailing address lines blank.
 
 ## Save and send
 
 Your Downloads folder will contain:
 
 - **CASE_VM.pdf** — location map.
-- **CASE_ML.csv** — cleaned owner mailing list.
+- **CASE_ML.csv** — cleaned owner mailing list for the vendor.
+- **CASE_ML.pdf** — matching mailing-list PDF for records and EnerGov attachment.
 
 After generating a non-empty list, click **Prepare vendor email**. It opens a draft in your default email app, with the case number, cleaned destination count and selection method filled in. Enter the vendor in To if blank. Attach the downloaded CSV and the required notice/map files; add the mailing date and billing/project details, review, then send. Nothing is attached or sent automatically. If no draft opens, check your default mail-app settings.
 
