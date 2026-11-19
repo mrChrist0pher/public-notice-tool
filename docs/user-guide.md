@@ -38,7 +38,7 @@ Your Downloads folder will contain:
 - **CASE_ML.csv** — cleaned owner mailing list for the vendor.
 - **CASE_ML.pdf** — matching mailing-list PDF for records and EnerGov attachment.
 
-After generating a non-empty list, click **Prepare vendor email**. It opens a draft in your default email app, with the case number, cleaned destination count and selection method filled in. Enter the vendor in To if blank. Attach the downloaded CSV and the required notice/map files; add the mailing date and billing/project details, review, then send. Nothing is attached or sent automatically. If no draft opens, check your default mail-app settings.
+After generating a non-empty list, click **Prepare vendor email**. It opens a draft in your default email app, with the case number and mailing destination count filled in. Check the prefilled vendor in To and Public Notice IR in CC. Attach the downloaded CSV and the required notice/map files; add the mailing date and your signature, review, then send. Nothing is attached or sent automatically. If no draft opens, check your default mail-app settings.
 
 Save the files with the case records and follow the usual EnerGov handoff.
 

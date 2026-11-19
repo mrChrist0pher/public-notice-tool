@@ -1,5 +1,13 @@
 # Source snapshot
 
+## Vendor draft configuration November 18 2026
+
+Production version 15 supplies the user-confirmed vendor To, Public Notice IR CC, greeting and display names through local configuration. The reusable template uses professional print/mail wording and case/count, with no billing or sender-name placeholder. It does not automatically attach files, insert an Outlook signature or send mail. Draft URL/input checks, download and picking tests, and production build passed. Production recipient settings read back successfully. No actual Outlook send was tested or performed. Version 14 retained for rollback; other app settings were preserved.
+
+Bundle SHA-256: cfb95679f7ee005ed19ef2206578bf33804f8885339848398fcefa399a9c3c69
+
+
+
 ## Generate only mailing downloads November 18 2026
 
 Production version 14 removes the separate mailing PDF link. Generate mailing list still creates both files and requests both downloads together. Browser settings control the download folder and multiple-download permission. pdfReady records successful generation, not confirmed file saving. No other output, selection, email or tracking changes. Download-handler tests and production build passed. Version 13 retained for rollback.

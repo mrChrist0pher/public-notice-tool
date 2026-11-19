@@ -240,10 +240,9 @@ export default function Widget(props:AllWidgetProps<any>) {
       // The cleaned result is cleared whenever the case, mode, custom radius or
       // parcel selection changes. Only a current generated list enables this.
       if(busy||!result?.rows?.length||appliedMode!==mode)throw Error('Generate the current mailing list first.')
-      const method=mode==='custom'?customRadius+' feet (custom)':mode==='adjacent'?'Adjacent, with any manual adjustments':mode+' feet, with any manual adjustments'
       const a=document.createElement('a')
-      a.href=vendorEmailUrl(caseRef.current,result.rows.length,method,cfg.mailingVendorEmail||'');a.click()
-      setMessage('Email draft requested in your default email application. Attach '+caseRef.current+'_ML.csv and the required notice/map files; retain '+caseRef.current+'_ML.pdf for records. Fill in the mailing date and billing information, then review and send. Nothing is attached or sent automatically.')
+      a.href=vendorEmailUrl(caseRef.current,result.rows.length,cfg.mailingVendorGreeting||'Hello',cfg.mailingVendorEmail||'',cfg.mailingVendorCc||'');a.click()
+      setMessage('Email draft requested in your default email application. Attach '+caseRef.current+'_ML.csv and the required notice/map files; retain '+caseRef.current+'_ML.pdf for records. Fill in the mailing date, add your signature, then review and send. Nothing is attached or sent automatically.')
     }catch(e){setMessage('Could not prepare email: '+e.message)}
   }
   const button=(label:string,fn:()=>void,disabled=false,pressed?:boolean)=><button type="button" aria-pressed={pressed} disabled={busy||disabled} onClick={fn} style={{padding:'10px 12px',border:'1px solid '+((busy||disabled)?'#46515d':'#399aaa'),borderRadius:4,background:(busy||disabled)?'#303943':'#176b78',color:(busy||disabled)?'#aebbc8':'#ffffff',width:'100%',margin:'5px 0',cursor:'pointer'}}>{label}</button>
@@ -291,6 +290,7 @@ export default function Widget(props:AllWidgetProps<any>) {
     {button('Generate mailing list',()=>void generate(),!count||appliedMode!==mode)}
     {result&&<p>{result.rows.length} mailing destinations - CSV ready{result.pdfReady?' and PDF ready':''}</p>}
     {button('Prepare vendor email',prepareEmail,!result?.rows?.length||appliedMode!==mode)}
+    {cfg.mailingVendorName&&<p>Draft to {cfg.mailingVendorName}.{cfg.mailingVendorCcName&&' CC: '+cfg.mailingVendorCcName+'.'}</p>}
     <p>Opens a draft in your default email app. Attach the downloaded mailing list and required notice/map files before sending.{!cfg.mailingVendorEmail&&' Enter the vendor in the To field.'}</p>
     <div role="status" aria-live="polite" style={{marginTop:12,padding:10,background:'#253442',borderRadius:4}}>{message}</div>
   </div>

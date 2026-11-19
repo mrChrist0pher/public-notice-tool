@@ -77,3 +77,7 @@ Generate mailing list now builds both outputs before requesting CSV and PDF down
 ## November 18 Generate only mailing downloads
 
 Version 14 removes the separate mailing PDF link at Chris's request. Generate mailing list still prepares both files and initiates both downloads. The status message directs users to allow multiple downloads; the browser controls download destination and permissions. pdfReady is a generation flag, not proof the file was saved. PDF failure still permits CSV-only output with an explicit error.
+
+## November 18 vendor recipient and wording
+
+Version 15 adds configurable greeting, CC and recipient display names. User-confirmed vendor To and Public Notice IR CC are in local deployment configuration. Professional print/mail request includes case and mailing destination count, without billing or sender-name placeholders. Attachments, mailing date, signature and Send stay manual. No email was sent by this deployment.
